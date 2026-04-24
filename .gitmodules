@@ -1,0 +1,4 @@
+﻿[submodule "modules/XylarBedrock.Localization"]
+	path = modules/XylarBedrock.Localization
+	url = https://github.com/xylarcompany/XylarBedrock.Localization.git
+

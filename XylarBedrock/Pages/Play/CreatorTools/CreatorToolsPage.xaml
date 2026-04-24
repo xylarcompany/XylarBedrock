@@ -1,0 +1,103 @@
+﻿<Page x:Class="XylarBedrock.Pages.Play.CreatorTools.CreatorToolsPage"
+    x:Name = "CreatorToolsPageFile"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:properties="clr-namespace:XylarBedrock.Properties"
+    xmlns:classes="clr-namespace:XylarBedrock.Classes"
+    xmlns:viewModels="clr-namespace:XylarBedrock.ViewModels"
+    xmlns:config="clr-namespace:XylarBedrock.ViewModels"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:controls="clr-namespace:XylarBedrock.Pages.Play.Home.Components"
+    DataContext="{x:Static viewModels:MainDataModel.Default}"
+    mc:Ignorable="d"
+    d:DesignHeight="608" d:DesignWidth="828"
+    Title="PlayScreenPage">
+    <Page.Resources>
+        <sys:Double x:Key="MaxLogoHeight">100</sys:Double>
+    </Page.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid Loaded="Grid_Loaded">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="100"></RowDefinition>
+                <RowDefinition Height="18"></RowDefinition>
+                <RowDefinition MinHeight="66"></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Row="2" Grid.ColumnSpan="3" Grid.RowSpan="2">
+                <Grid.Background>
+                    <ImageBrush Stretch="UniformToFill" RenderOptions.BitmapScalingMode="Fant" x:Name="ImageBrush" ImageSource="/Resources/images/bg/creatortools_screen/editor-header-image.png"/>
+                </Grid.Background>
+                <Grid.Effect>
+                    <BlurEffect Radius="1"></BlurEffect>
+                </Grid.Effect>
+            </Grid>
+            <Rectangle Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+                <Rectangle.Fill>
+                    <ImageBrush
+                        ImageSource="/XylarBedrock;component/Resources/images/ui/decorations/EditorBannerDecoration.png"     
+                        RenderOptions.BitmapScalingMode="NearestNeighbor"
+                        Stretch="Fill"
+                        AlignmentX="Left"
+                        AlignmentY="Top"
+                        TileMode="Tile"
+                        Viewport="0,0,8,100"
+                        ViewportUnits="Absolute" />
+                </Rectangle.Fill>
+            </Rectangle>
+            <Grid Grid.ColumnSpan="3" Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="75"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0"
+                           Foreground="White"
+                           Text="{DynamicResource CreatorToolsPage_Editor}" 
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontFamily="/XylarBedrock;component/Resources/fonts/#Minecraft Ten"
+                           FontSize="40">
+                </TextBlock>
+                <TextBlock Grid.Row="1"
+                           Text="{DynamicResource CreatorToolsPage_Slogan}"
+                           Foreground="White" 
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Top"
+                           FontFamily="/XylarBedrock;component/Resources/fonts/#Minecraft Seven"
+                           UseLayoutRounding="True"
+                           SnapsToDevicePixels="True"
+                           FontSize="16">
+                </TextBlock>
+            </Grid>
+        </Grid>
+        <Grid x:Name="PlayScreenBorder" Grid.Row="1" x:FieldModifier="public" VerticalAlignment="Bottom" Background="#FF262626">
+            <TextBlock Style="{DynamicResource HeaderTextblock}" Text="{DynamicResource MainWindow_Disclaimer}" HorizontalAlignment="Right" Panel.ZIndex="0" VerticalAlignment="Center" Padding="0,0,5,0" Margin="0,0,0,0"/>
+            <Button IsEnabled="{Binding Source={x:Static viewModels:MainDataModel.Default},Path=ProgressBarState.AllowPlaying, Mode=OneWay}" x:Name="EditorPlayButton" Click="MainPlayButton_Click" HorizontalAlignment="Center" Margin="286,-8,286,0" VerticalAlignment="Top" Width="250" Height="56" Padding="0" Style="{DynamicResource BigGreenButton}">
+                <TextBlock x:Name="PlayButtonText" Style="{DynamicResource BigGreenButtonEditor_Text}" Text="{Binding Source={x:Static viewModels:MainDataModel.Default}, Path=ProgressBarState.PlayEditorButtonString, Mode=OneWay}"/>
+            </Button>
+            <controls:InstallationSelector x:Name="InstallationsList" 
+                                           ItemsSource="{Binding Config.CurrentInstallations}" 
+                                           HorizontalAlignment="Left" Margin="4,4,0,4" 
+                                           VerticalAlignment="Top" Width="250" Height="50"
+                                           IsSynchronizedWithCurrentItem="True"
+                                           SelectedItem=""
+                                           SelectedValue="{Binding Source={x:Static viewModels:MainDataModel.Default}, Path=Config.CurrentInstallationUUID, UpdateSourceTrigger=PropertyChanged}"
+                                           SelectedValuePath="InstallationUUID"   
+                                           Padding="-1,7,5,3">
+            </controls:InstallationSelector>
+        </Grid>
+    </Grid>
+
+</Page>
+

@@ -1,0 +1,21 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:classes="clr-namespace:XylarBedrock.Classes"
+                    xmlns:classes2="clr-namespace:XylarBedrock.Classes"
+                    xmlns:v="clr-namespace:System;assembly=mscorlib"
+                    xmlns:controls="clr-namespace:XylarBedrock.Pages.Settings.Versions">
+    <DataTemplate x:Key="VersionItemTemplate" DataType="{x:Type classes2:MCVersion}">
+        <controls:Component_VersionItem x:Name="ItemControl" DataContext="{Binding }" Tag="{Binding ElementName=PageHost}"></controls:Component_VersionItem>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsMouseOver}" Value="True">
+                <Setter TargetName="ItemControl" Property="ButtonPanelVisibility" Value="Visible"></Setter>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsFocused}" Value="True">
+                <Setter TargetName="ItemControl" Property="ButtonPanelVisibility" Value="Visible"></Setter>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsSelected}" Value="True">
+                <Setter TargetName="ItemControl" Property="ButtonPanelVisibility" Value="Visible"></Setter>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+</ResourceDictionary>

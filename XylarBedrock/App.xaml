@@ -1,0 +1,40 @@
+﻿<Application
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:XylarBedrock"
+             xmlns:bl="clr-namespace:XylarBedrock.Localization.Language;assembly=XylarBedrock.Localization"
+             x:Class="XylarBedrock.App"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <Style TargetType="{x:Type Window}">
+                        <Setter Property="FontFamily" Value="/XylarBedrock;component/#Noto Sans" />
+                    </Style>
+                </ResourceDictionary>
+                <bl:LanguageDictionary Source="/XylarBedrock.Localization;component/Resources/lang/lang.en-US.xaml"></bl:LanguageDictionary>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/values/base_values.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/icons.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/misc.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/contextmenu.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/button.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/checkbox.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/combobox.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/menuitems.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/listview.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/textbox.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/textblock.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/frame.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/scrollbars.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/tabbar.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/expander.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/richtextbox.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/radiobutton.xaml"/>
+                <ResourceDictionary Source="Resources/styles/item_templates.xaml"/>
+                <ResourceDictionary Source="/XylarBedrock;component/Resources/styles/focus_visuals.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
+

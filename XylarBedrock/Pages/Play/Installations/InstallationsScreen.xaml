@@ -1,0 +1,95 @@
+<Page x:Class="XylarBedrock.Pages.Play.Installations.InstallationsScreen"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:viewModels="clr-namespace:XylarBedrock.ViewModels"
+      xmlns:conv="clr-namespace:JemExtensions.WPF.Converters;assembly=JemExtensions"
+      xmlns:classes2="clr-namespace:XylarBedrock.Classes"
+      xmlns:controls="clr-namespace:XylarBedrock.Pages.Play.Installations.Components"
+      xmlns:controls2="clr-namespace:XylarBedrock.Pages.General"
+      d:DataContext="{d:DesignInstance Type=viewModels:MainDataModel}"
+      mc:Ignorable="d"
+      x:Name="PageHost"
+      d:DesignHeight="608"
+      d:DesignWidth="828"
+      Title="InstallationsScreen"
+      Loaded="PageHost_Loaded">
+    <Page.Resources>
+        <conv:EmptyItemCountConverter x:Key="IntToVisibilityConverter"/>
+        <CollectionViewSource x:Key="InstallationsSource4"
+                              Source="{Binding Config.CurrentInstallations}"
+                              Filter="CollectionViewSource_Filter"/>
+    </Page.Resources>
+
+    <Grid Margin="0" Background="#FF303030" Style="{DynamicResource DisabledStyle}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Margin="18,18,18,12"
+                Padding="18"
+                CornerRadius="16"
+                Background="#1E252B"
+                BorderBrush="#33414D"
+                BorderThickness="1">
+            <StackPanel>
+                <TextBlock Text="Minecraft for Windows"
+                           Foreground="White"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                <TextBlock Margin="0,8,0,0"
+                           Foreground="#B7C8D6"
+                           FontSize="13"
+                           TextWrapping="Wrap"
+                           FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"
+                           Text="Only the original Minecraft for Windows app is supported here."/>
+                <TextBlock Margin="0,6,0,0"
+                           Foreground="#B7C8D6"
+                           FontSize="13"
+                           TextWrapping="Wrap"
+                           FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"
+                           Text="Install it from Microsoft Store first, even with the free trial, then launch it from this page."/>
+            </StackPanel>
+        </Border>
+
+        <Grid HorizontalAlignment="Stretch" Grid.Row="1" Background="{DynamicResource ListBox.Static.Background}">
+            <ListView x:Name="InstallationsList"
+                      Margin="18,0,18,18"
+                      ItemsSource="{Binding Source={StaticResource InstallationsSource4}, IsAsync=True}"
+                      SourceUpdated="InstallationsList_SourceUpdated"
+                      SelectionMode="Single"
+                      Grid.Row="1"
+                      HorizontalContentAlignment="Center"
+                      HorizontalAlignment="Center">
+                <ListView.ItemTemplate>
+                    <DataTemplate DataType="{x:Type classes2:BLInstallation}">
+                        <Grid Focusable="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                            <controls:InstallationItem x:Name="ItemControl" DataContext="{Binding}" Tag="{Binding ElementName=PageHost}"/>
+                        </Grid>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsMouseOver}" Value="True">
+                                <Setter TargetName="ItemControl" Property="ButtonPanelVisibility" Value="Visible"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsFocused}" Value="True">
+                                <Setter TargetName="ItemControl" Property="ButtonPanelVisibility" Value="Visible"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsSelected}" Value="True">
+                                <Setter TargetName="ItemControl" Property="ButtonPanelVisibility" Value="Visible"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <controls2:General_ResultPanel PanelType="NoContent"
+                                           Grid.Row="1"
+                                           VerticalAlignment="Stretch"
+                                           HorizontalAlignment="Stretch"
+                                           x:Name="NothingFound"
+                                           Visibility="{Binding ElementName=InstallationsList, Path=Items.Count, Converter={StaticResource IntToVisibilityConverter}}"/>
+        </Grid>
+    </Grid>
+</Page>
