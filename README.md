@@ -9,9 +9,5 @@
 Download the latest XylarBedrock build from GitHub Releases:
 - [GitHub Releases](https://github.com/xylarcompany/XylarBedrock/releases/latest)
 
-## Screenshots
-Screenshots will be published with the XylarBedrock project pages:
-- [Project Home](https://github.com/xylarcompany/XylarBedrock)
-
 ## Credits
 Credits are given to Xylar Inc. Mrmariix, SasyIsCool and The_Red_Shadow.
