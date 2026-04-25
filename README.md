@@ -1,12 +1,12 @@
 # XylarBedrock
 
 <p align="center">
-  <img src="Resources/images/logo/BugrockEdition.png" alt="XylarBedrock Logo" width="200"/>
+  <img src="https://raw.githubusercontent.com/xylarcompany/XylarBedrock/main/XylarBedrock/Resources/images/logo/BugrockEdition.png" alt="XylarBedrock Logo" width="200"/>
   &nbsp;&nbsp;&nbsp;
-  <img src="Resources/images/icons/bedrock_grass_icon.png" alt="Bedrock Icon" width="100"/>
+  <img src="https://raw.githubusercontent.com/xylarcompany/XylarBedrock/main/XylarBedrock/Resources/images/icons/bedrock_grass_icon.png" alt="Bedrock Icon" width="100"/>
 </p>
 
-**XylarBedrock** is an unofficial launcher focused on the original **Minecraft for Windows (Bedrock Edition)** experience.
+**XylarBedrock** is an unofficial launcher for **Minecraft for Windows (Bedrock Edition)**.
 
 <p align="center">
   <a href="https://github.com/xylarcompany/XylarBedrock">
@@ -19,17 +19,16 @@
 
 ---
 
-## Get the Launcher
+## Get the launcher
 
-Download the latest build from GitHub Releases:
-
-👉 https://github.com/xylarcompany/XylarBedrock/releases/latest
+Download the latest build from GitHub Releases:  
+https://github.com/xylarcompany/XylarBedrock/releases/latest
 
 ---
 
 ## About
 
-XylarBedrock aims to provide a simplified way to launch and manage **Minecraft Bedrock Edition** on Windows to make ur experience FREE!
+A simple launcher to start and manage Minecraft Bedrock on Windows.
 
 ---
 
@@ -42,6 +41,6 @@ XylarBedrock aims to provide a simplified way to launch and manage **Minecraft B
 
 ---
 
-## ⚠️ Disclaimer
+## Disclaimer
 
-This project is **unofficial** and is not affiliated with Mojang or Microsoft.
+This project is unofficial and not affiliated with Mojang or Microsoft.
