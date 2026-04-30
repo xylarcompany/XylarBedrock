@@ -17,8 +17,7 @@ using XylarBedrock.Pages.General;
 
 namespace XylarBedrock.ViewModels
 {
-
-    [AddINotifyPropertyChangedInterface]    //119 Lines
+    [AddINotifyPropertyChangedInterface]
     public class MainViewModel : IDialogHander, ILauncherModel, IBackwardsCommunication
     {
         public static MainViewModel Default { get; set; } = new MainViewModel();

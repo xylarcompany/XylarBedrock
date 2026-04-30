@@ -3,9 +3,6 @@ using System.Windows.Controls;
 
 namespace XylarBedrock.Pages.Welcome
 {
-    /// <summary>
-    /// Логика взаимодействия для WelcomePageOne.xaml
-    /// </summary>
     public partial class WelcomePageThree : Page
     {
         public WelcomePagesSwitcher pageSwitcher = new WelcomePagesSwitcher();

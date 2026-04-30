@@ -5,9 +5,6 @@ using FolderBrowserEx;
 
 namespace XylarBedrock.Pages.Welcome
 {
-    /// <summary>
-    /// Логика взаимодействия для WelcomePageOne.xaml
-    /// </summary>
     public partial class WelcomePageTwo : Page
     {
         public WelcomePagesSwitcher pageSwitcher = new WelcomePagesSwitcher();

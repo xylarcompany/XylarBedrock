@@ -13,8 +13,7 @@ using XylarBedrock.Enums;
 
 namespace XylarBedrock.Properties
 {
-
-    [AddINotifyPropertyChangedInterface]    // someone please shoot me
+    [AddINotifyPropertyChangedInterface]
     public class LauncherSettings
     {
         public static LauncherSettings Default { get; private set; } = new LauncherSettings();
@@ -110,6 +109,7 @@ namespace XylarBedrock.Properties
         public bool PortableMode { get; set; } = false;
         public string FixedDirectory { get; set; } = "";
         public bool IsFirstLaunch { get; set; } = true;
+        public bool LastSessionClosedCleanly { get; set; } = true;
         public string CurrentInstallationUUID { get; set; } = string.Empty;
         public string CurrentProfileUUID { get; set; } = "";
         public string LastPatchedMinecraftVersion { get; set; } = string.Empty;

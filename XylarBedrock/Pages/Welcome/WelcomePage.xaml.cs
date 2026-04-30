@@ -6,9 +6,6 @@ using XylarBedrock.ViewModels;
 
 namespace XylarBedrock.Pages.Welcome
 {
-    /// <summary>
-    /// Логика взаимодействия для WelcomePage.xaml
-    /// </summary>
     public partial class WelcomePage : Page
     {
         public WelcomePagesSwitcher pageSwitcher = new WelcomePagesSwitcher();

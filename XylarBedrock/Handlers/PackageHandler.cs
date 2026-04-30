@@ -675,11 +675,11 @@ namespace XylarBedrock.Handlers
                     if (!Directory.Exists(RequiredDir)) Directory.CreateDirectory(RequiredDir);
                     DirectoryInfo profileDir = Directory.CreateDirectory(ProfileFolder);
                     
-                    // Attempt to create a symlink without elevated privileges
-                    bool symlinkCreated = SymLinkHelper.CreateSymbolicLinkSafe(PackageFolder, ProfileFolder, SymLinkHelper.SymbolicLinkType.Directory);
-                    if (!symlinkCreated)
+                    bool linkCreated = TryCreatePackageProfileLink(PackageFolder, ProfileFolder);
+                    if (!linkCreated)
                     {
-                        throw new SaveRedirectionFailedException(new Exception("Failed to create symbolic link. Ensure Developer Mode is enabled or run as administrator."));
+                        throw new SaveRedirectionFailedException(
+                            new Exception("Failed to connect the Minecraft save folder to the selected profile directory."));
                     }
                     
                     DirectoryInfo pkgDir = Directory.CreateDirectory(PackageFolder);
@@ -743,6 +743,48 @@ namespace XylarBedrock.Handlers
             {
                 System.Diagnostics.Trace.WriteLine("Error while Authenticating UserToken for Version Fetching:\n" + e); //TODO: Localize Error Message
                 throw new BetaAuthenticationFailedException(e);
+            }
+        }
+
+        private static bool TryCreatePackageProfileLink(string linkPath, string targetPath)
+        {
+            if (SymLinkHelper.CreateSymbolicLinkSafe(linkPath, targetPath, SymLinkHelper.SymbolicLinkType.Directory))
+            {
+                Trace.WriteLine("Save data redirection created with symbolic link support.");
+                return true;
+            }
+
+            return TryCreateDirectoryJunction(linkPath, targetPath);
+        }
+
+        private static bool TryCreateDirectoryJunction(string linkPath, string targetPath)
+        {
+            try
+            {
+                ProcessStartInfo junctionInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c mklink /J \"{linkPath}\" \"{targetPath}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    WorkingDirectory = Path.GetDirectoryName(linkPath) ?? AppContext.BaseDirectory
+                };
+
+                using Process junctionProcess = Process.Start(junctionInfo);
+                junctionProcess?.WaitForExit();
+
+                bool created = junctionProcess != null && junctionProcess.ExitCode == 0 && Directory.Exists(linkPath);
+                Trace.WriteLine(created
+                    ? "Save data redirection created with directory junction fallback."
+                    : "Directory junction fallback failed.");
+                return created;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Directory junction fallback failed: {ex}");
+                return false;
             }
         }
         #endregion

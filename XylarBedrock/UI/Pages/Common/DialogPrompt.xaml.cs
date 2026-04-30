@@ -8,9 +8,6 @@ using XylarBedrock.UI.Interfaces;
 
 namespace XylarBedrock.UI.Pages.Common
 {
-    /// <summary>
-    /// Логика взаимодействия для DialogPrompt.xaml
-    /// </summary>
     public partial class DialogPrompt : Page
     {
 

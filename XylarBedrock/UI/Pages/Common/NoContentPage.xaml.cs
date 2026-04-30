@@ -15,9 +15,6 @@ using System.Windows.Shapes;
 
 namespace XylarBedrock.UI.Pages.Common
 {
-    /// <summary>
-    /// Логика взаимодействия для NoContentPage.xaml
-    /// </summary>
     public partial class NoContentPage : Page
     {
         public NoContentPage()

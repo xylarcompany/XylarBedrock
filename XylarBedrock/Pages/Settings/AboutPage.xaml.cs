@@ -17,9 +17,6 @@ using XylarBedrock.ViewModels;
 
 namespace XylarBedrock.Pages.Settings
 {
-    /// <summary>
-    /// Логика взаимодействия для AboutPage.xaml
-    /// </summary>
     public partial class AboutPage : Page
     {
         public AboutPage()

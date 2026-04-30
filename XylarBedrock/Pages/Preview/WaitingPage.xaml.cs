@@ -5,9 +5,6 @@ using XylarBedrock.UI.Interfaces;
 
 namespace XylarBedrock.Pages.Preview
 {
-    /// <summary>
-    /// Логика взаимодействия для ErrorScreen.xaml
-    /// </summary>
     public partial class WaitingPage : Page, IDisposable
     {
 
@@ -27,7 +24,6 @@ namespace XylarBedrock.Pages.Preview
 
         private void ErrorScreenCloseButton_Click(object sender, RoutedEventArgs e)
         {
-            // As i understand it not only hide error screen overlay, but also clear it from memory
             Handler.SetDialogFrame(null);
         }
 

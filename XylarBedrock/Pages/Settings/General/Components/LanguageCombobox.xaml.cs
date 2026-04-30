@@ -11,9 +11,6 @@ using System.Windows.Controls;
 
 namespace XylarBedrock.Pages.Settings.General.Components
 {
-    /// <summary>
-    /// Interaction logic for LanguageCombobox.xaml
-    /// </summary>
     public partial class LanguageCombobox : ComboBox
     {
         public LanguageCombobox()

@@ -1,0 +1,771 @@
+﻿<Page x:Class="XylarBedrock.Pages.Addons.AddonsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:c="clr-namespace:XylarBedrock.Classes"
+      xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+      mc:Ignorable="d"
+      d:DesignHeight="1080"
+      d:DesignWidth="1920"
+      Title="AddonsPage"
+      Background="#FF1B1B1B">
+    <Page.Resources>
+        <Style x:Key="SectionTitleText" TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="FontFamily" Value="/XylarBedrock;component/Resources/fonts/#Minecraft Ten"/>
+        </Style>
+
+        <Style x:Key="AddonRibbonText" TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="#FFF6D04F"/>
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="FontFamily" Value="/XylarBedrock;component/Resources/fonts/#Minecraft Ten"/>
+        </Style>
+
+        <Style x:Key="SpinnerArcStroke" TargetType="{x:Type Path}">
+            <Setter Property="Stroke" Value="White"/>
+            <Setter Property="StrokeThickness" Value="4.2"/>
+            <Setter Property="StrokeStartLineCap" Value="Round"/>
+            <Setter Property="StrokeEndLineCap" Value="Round"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+        </Style>
+
+        <DataTemplate x:Key="MarketplaceCardTemplate" DataType="{x:Type c:AddonEntry}">
+            <Button Tag="{Binding}"
+                    Click="AddonCard_Click"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="0"
+                    Margin="0,0,12,0"
+                    Width="244">
+                <Border Background="#FF505050"
+                        BorderBrush="#FF232323"
+                        BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="138"/>
+                            <RowDefinition Height="72"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid>
+                            <Image Source="{Binding ImagePath}"
+                                   Stretch="UniformToFill"/>
+                            <Border HorizontalAlignment="Left"
+                                    VerticalAlignment="Bottom"
+                                    Margin="0,0,0,10"
+                                    Width="164"
+                                    Background="#CC171717"
+                                    BorderBrush="#FFF6D04F"
+                                    BorderThickness="0,0,0,0"
+                                    Padding="12,6,12,6">
+                                <TextBlock Text="Add-On"
+                                           Style="{StaticResource AddonRibbonText}"/>
+                            </Border>
+                        </Grid>
+
+                        <Grid Grid.Row="1"
+                              Background="#FF535353">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Margin="10,8,10,0"
+                                       Text="{Binding Title}"
+                                       Foreground="White"
+                                       FontSize="15"
+                                       TextTrimming="CharacterEllipsis"
+                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                            <TextBlock Grid.Row="1"
+                                       Margin="10,4,10,0"
+                                       Text="{Binding Author, StringFormat=By {0}}"
+                                       Foreground="#FFD8D8D8"
+                                       FontSize="12"
+                                       TextTrimming="CharacterEllipsis"
+                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Button>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DetailRowCardTemplate" DataType="{x:Type c:AddonEntry}">
+            <Button Tag="{Binding}"
+                    Click="AddonCard_Click"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="0"
+                    Margin="0,0,12,0"
+                    Width="300">
+                <Border Background="#FF4F4F4F"
+                        BorderBrush="#FF202020"
+                        BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="152"/>
+                            <RowDefinition Height="68"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid>
+                            <Image Source="{Binding ImagePath}"
+                                   Stretch="UniformToFill"/>
+                            <Border HorizontalAlignment="Left"
+                                    VerticalAlignment="Bottom"
+                                    Margin="0,0,0,10"
+                                    Width="164"
+                                    Background="#CC171717"
+                                    Padding="12,6,12,6">
+                                <TextBlock Text="Add-On"
+                                           Style="{StaticResource AddonRibbonText}"/>
+                            </Border>
+                        </Grid>
+
+                        <Grid Grid.Row="1"
+                              Background="#FF525252">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Margin="10,8,10,0"
+                                       Text="{Binding Title}"
+                                       Foreground="White"
+                                       FontSize="14"
+                                       TextTrimming="CharacterEllipsis"
+                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                            <TextBlock Grid.Row="1"
+                                       Margin="10,4,10,0"
+                                       Text="{Binding Author, StringFormat=By {0}}"
+                                       Foreground="#FFD8D8D8"
+                                       FontSize="12"
+                                       TextTrimming="CharacterEllipsis"
+                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Button>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ShelfLargeCardTemplate" DataType="{x:Type c:AddonEntry}">
+            <Button Tag="{Binding}"
+                    Click="AddonCard_Click"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="0"
+                    Margin="0,0,12,12"
+                    Width="286">
+                <Border Background="#FF505050"
+                        BorderBrush="#FF232323"
+                        BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="156"/>
+                            <RowDefinition Height="76"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid>
+                            <Image Source="{Binding ImagePath}"
+                                   Stretch="UniformToFill"/>
+                            <Border HorizontalAlignment="Left"
+                                    VerticalAlignment="Bottom"
+                                    Margin="0,0,0,10"
+                                    Width="176"
+                                    Background="#CC171717"
+                                    BorderBrush="#FFF6D04F"
+                                    BorderThickness="0,0,0,0"
+                                    Padding="12,6,12,6">
+                                <TextBlock Text="Add-On"
+                                           Style="{StaticResource AddonRibbonText}"/>
+                            </Border>
+                        </Grid>
+
+                        <Grid Grid.Row="1"
+                              Background="#FF535353">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Margin="10,8,10,0"
+                                       Text="{Binding Title}"
+                                       Foreground="White"
+                                       FontSize="15"
+                                       TextTrimming="CharacterEllipsis"
+                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                            <TextBlock Grid.Row="1"
+                                       Margin="10,4,10,0"
+                                       Text="{Binding Author, StringFormat=By {0}}"
+                                       Foreground="#FFD8D8D8"
+                                       FontSize="12"
+                                       TextTrimming="CharacterEllipsis"
+                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Button>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Background="#FF1B1B1B">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="46"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.RowSpan="2">
+            <Image Source="/XylarBedrock;component/resources/images/bg/addonsminecraft.png"
+                   Stretch="UniformToFill"
+                   RenderOptions.BitmapScalingMode="Fant">
+                <Image.Effect>
+                    <BlurEffect Radius="6"/>
+                </Image.Effect>
+            </Image>
+            <Border Background="#C6141414"/>
+        </Grid>
+
+        <Border Grid.Row="0"
+                Background="#FFCCCCCC"
+                BorderBrush="#FF8A8A8A"
+                BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="286"/>
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="HeaderBackButton"
+                        Grid.Column="0"
+                        Click="BackButton_Click"
+                        Width="44"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="#FF303030"
+                        FontSize="30"
+                        FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"
+                        Content="&#x2039;"
+                        Visibility="Collapsed"/>
+
+                <TextBlock Grid.Column="1"
+                           Text="{Binding CurrentHeaderTitle}"
+                           Margin="12,0,0,0"
+                           VerticalAlignment="Center"
+                           Foreground="#FF303030"
+                           FontSize="18"
+                           FontFamily="/XylarBedrock;component/Resources/fonts/#Minecraft Ten"/>
+
+                <Grid Grid.Column="2"
+                      Margin="0,4,6,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="44"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Background="#FF4B4B4B"
+                            BorderBrush="#FF2D2D2D"
+                            BorderThickness="2"/>
+                    <TextBox x:Name="SearchBox"
+                             Margin="10,0,0,0"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Foreground="White"
+                             VerticalContentAlignment="Center"
+                             FontSize="16"
+                             Tag="{DynamicResource AddonsPage_SearchPlaceholder}"
+                             Style="{DynamicResource BlankTextBox}"
+                             KeyDown="SearchBox_KeyDown"/>
+                    <Button Grid.Column="1"
+                            Click="SearchButton_Click"
+                            Background="#FF111111"
+                            BorderBrush="#FF050505"
+                            BorderThickness="2">
+                        <Image Width="18"
+                               Height="18"
+                               Source="{DynamicResource SearchIcon}"/>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1"
+              PreviewMouseWheel="PageContent_PreviewMouseWheel">
+            <Grid>
+                <Grid x:Name="CatalogViewRoot">
+                    <ScrollViewer x:Name="CatalogScrollViewer"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  CanContentScroll="False">
+                        <StackPanel Margin="0,8,0,18"
+                                    MaxWidth="1260"
+                                    HorizontalAlignment="Center">
+                            <Image MaxHeight="100"
+                                   Margin="0,18,0,16"
+                                   HorizontalAlignment="Center"
+                                   Source="/XylarBedrock;component/resources/images/logo/BugrockEdition.png"
+                                   Stretch="Uniform"
+                                   RenderOptions.BitmapScalingMode="HighQuality">
+                                <Image.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform CenterY="0.5" CenterX="0.5"/>
+                                        <SkewTransform CenterY="0.5" CenterX="0.5"/>
+                                        <RotateTransform CenterY="0.5" CenterX="0.5"/>
+                                        <TranslateTransform/>
+                                    </TransformGroup>
+                                </Image.RenderTransform>
+                                <Image.Triggers>
+                                    <EventTrigger RoutedEvent="Border.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="Margin">
+                                                    <SplineThicknessKeyFrame KeyTime="00:00:0" Value="0,-55,0,16" />
+                                                    <SplineThicknessKeyFrame KeyTime="00:00:0.15" Value="0,28,0,16" />
+                                                    <SplineThicknessKeyFrame KeyTime="00:00:0.25" Value="0,18,0,16" />
+                                                    <SplineThicknessKeyFrame KeyTime="00:00:0.30" Value="0,24,0,16" />
+                                                    <SplineThicknessKeyFrame KeyTime="00:00:0.35" Value="0,18,0,16" />
+                                                </ThicknessAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Image.Triggers>
+                            </Image>
+
+                            <Grid Height="392"
+                                  Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.18*"/>
+                                    <ColumnDefinition Width="0.94*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Button Tag="{Binding FeaturedAddon}"
+                                        Click="AddonCard_Click"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="0"
+                                        Margin="0,0,12,0">
+                                    <Grid>
+                                        <Border BorderBrush="#FF1C1C1C"
+                                                BorderThickness="2">
+                                            <Image Source="{Binding FeaturedAddon.ImagePath}"
+                                                   Stretch="UniformToFill"/>
+                                        </Border>
+                                        <Border HorizontalAlignment="Left"
+                                                VerticalAlignment="Bottom"
+                                                Margin="10,0,0,14"
+                                                Width="184"
+                                                Background="#D61B1B1B"
+                                                BorderBrush="#FFF6D04F"
+                                                BorderThickness="2"
+                                                Padding="16,8,16,8">
+                                            <TextBlock Text="Add-On"
+                                                       Foreground="#FFF6D04F"
+                                                       FontSize="21"
+                                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Minecraft Ten"/>
+                                        </Border>
+                                    </Grid>
+                                </Button>
+
+                                <ItemsControl Grid.Column="1"
+                                              ItemsSource="{Binding SpotlightAddons}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="2" Rows="2"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type c:AddonEntry}">
+                                            <Button Tag="{Binding}"
+                                                    Click="AddonCard_Click"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Padding="0"
+                                                    Margin="0,0,0,10">
+                                                <Border BorderBrush="#FF1C1C1C"
+                                                        BorderThickness="1"
+                                                        Margin="0,0,10,0">
+                                                    <Grid>
+                                                        <Image Source="{Binding ImagePath}"
+                                                               Stretch="UniformToFill"/>
+                                                        <Border Background="#B3141414"
+                                                                VerticalAlignment="Bottom"
+                                                                Height="42">
+                                                            <TextBlock Margin="9,9,9,0"
+                                                                       Text="{Binding Title}"
+                                                                       Foreground="White"
+                                                                       FontSize="11"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+
+                            <ItemsControl ItemsSource="{Binding PromoAddons}"
+                                          Margin="0,0,0,16">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="2"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type c:AddonEntry}">
+                                        <Button Tag="{Binding}"
+                                                Click="AddonCard_Click"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Padding="0"
+                                                Margin="0,0,12,0">
+                                            <Border Background="#FF2F2F2F"
+                                                    BorderBrush="#FF161616"
+                                                    BorderThickness="2"
+                                                    Height="96">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="136"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Margin="16,12,16,12">
+                                                        <TextBlock Text="{Binding Title}"
+                                                                   Foreground="White"
+                                                                   FontSize="14"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                                                        <TextBlock Margin="0,6,0,0"
+                                                                   Text="{Binding Description}"
+                                                                   Foreground="#FFD8D8D8"
+                                                                   FontSize="11"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                                                    </StackPanel>
+                                                    <Image Grid.Column="1"
+                                                           Source="{Binding ImagePath}"
+                                                           Stretch="UniformToFill"/>
+                                                </Grid>
+                                            </Border>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="Best sellers"
+                                       Style="{StaticResource SectionTitleText}"
+                                       Margin="0,0,0,6"/>
+
+                            <Grid Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="52"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="52"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Button x:Name="ShelfOneLeftButton"
+                                        Grid.Column="0"
+                                        Click="ShelfOneScrollLeft_Click"
+                                        Background="#FF757575"
+                                        BorderBrush="#FF1D1D1D"
+                                        BorderThickness="1"
+                                        Foreground="White"
+                                        FontSize="26"
+                                        Content="&#x2039;"/>
+
+                                <Border Grid.Column="1"
+                                        Margin="8,0"
+                                        Background="#00000000">
+                                    <ScrollViewer x:Name="ShelfOneScrollViewer"
+                                                  HorizontalScrollBarVisibility="Hidden"
+                                                  VerticalScrollBarVisibility="Disabled"
+                                                  CanContentScroll="False"
+                                                  ScrollChanged="ShelfOneScrollViewer_ScrollChanged">
+                                        <ItemsControl ItemsSource="{Binding ShelfOneAddons}"
+                                                      ItemTemplate="{StaticResource MarketplaceCardTemplate}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Border>
+
+                                <Button x:Name="ShelfOneRightButton"
+                                        Grid.Column="2"
+                                        Click="ShelfOneScrollRight_Click"
+                                        Background="#FF757575"
+                                        BorderBrush="#FF1D1D1D"
+                                        BorderThickness="1"
+                                        Foreground="White"
+                                        FontSize="26"
+                                        Content="&#x203A;"/>
+                            </Grid>
+
+                            <TextBlock Text="More from the launcher"
+                                       Style="{StaticResource SectionTitleText}"
+                                       Margin="0,0,0,6"/>
+
+                            <ItemsControl ItemsSource="{Binding ShelfTwoAddons}"
+                                          ItemTemplate="{StaticResource ShelfLargeCardTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+
+                            <Grid x:Name="NoResultsState"
+                                  Margin="0,20,0,0"
+                                  Visibility="Collapsed">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="{DynamicResource AddonsPage_NoResultsTitle}"
+                                               HorizontalAlignment="Center"
+                                               Foreground="White"
+                                               FontSize="22"
+                                               FontFamily="/XylarBedrock;component/Resources/fonts/#Minecraft Ten"/>
+                                    <TextBlock x:Name="NoResultsText"
+                                               Margin="0,10,0,0"
+                                               Text="{DynamicResource AddonsPage_NoResultsText}"
+                                               HorizontalAlignment="Center"
+                                               Foreground="#FFD0D0D0"
+                                               FontSize="13"
+                                               FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Margin="0,16,0,0"
+                                        HorizontalAlignment="Center">
+                                <TextBlock x:Name="ResultsSummaryText"
+                                           Margin="0,12,0,0"
+                                           HorizontalAlignment="Center"
+                                           Foreground="#FFD0D0D0"
+                                           FontSize="12"
+                                           FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"
+                                           Text="{DynamicResource AddonsPage_LoadingSummary}"/>
+                                <TextBlock x:Name="PageIndicatorText"
+                                           Margin="0,6,0,0"
+                                           Text="{DynamicResource AddonsPage_PageIndicatorDefault}"
+                                           HorizontalAlignment="Center"
+                                           Foreground="#FFC5D0DA"
+                                           FontSize="12"
+                                           FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                                <Button Margin="0,12,0,0"
+                                        x:Name="LoadMoreButton"
+                                        Click="LoadMoreButton_Click"
+                                        Content="{DynamicResource AddonsPage_LoadMoreButton}"
+                                        Style="{DynamicResource DialogButton_Green}"
+                                        Height="34"
+                                        HorizontalAlignment="Center"
+                                        Visibility="Collapsed"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <Grid x:Name="DetailViewRoot"
+                      Visibility="Collapsed">
+                    <ScrollViewer x:Name="DetailScrollViewer"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  CanContentScroll="False">
+                        <StackPanel Margin="10,10,12,18">
+                            <Grid Height="286"
+                                  Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="460"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border BorderBrush="#FF131313"
+                                        BorderThickness="2">
+                                    <Grid>
+                                        <Image Source="{Binding SelectedAddon.ImagePath}"
+                                               Stretch="UniformToFill"/>
+                                        <Border HorizontalAlignment="Left"
+                                                VerticalAlignment="Bottom"
+                                                Margin="10,0,0,14"
+                                                Width="184"
+                                                Background="#D61B1B1B"
+                                                BorderBrush="#FFF6D04F"
+                                                BorderThickness="2"
+                                                Padding="16,8,16,8">
+                                            <TextBlock Text="Add-On"
+                                                       Foreground="#FFF6D04F"
+                                                       FontSize="21"
+                                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Minecraft Ten"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <Grid Grid.Column="1"
+                                      Margin="14,0,0,0">
+                                    <Grid.Background>
+                                        <ImageBrush ImageSource="{Binding SelectedAddon.ImagePath}"
+                                                    Stretch="UniformToFill"/>
+                                    </Grid.Background>
+                                    <Border Background="#8C171717"/>
+                                    <Grid Margin="16">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Text="{Binding SelectedAddon.Title}"
+                                                   Foreground="White"
+                                                   FontSize="19"
+                                                   FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                                        <TextBlock Grid.Row="1"
+                                                   Margin="0,6,0,0"
+                                                   Text="{Binding SelectedAddonAuthorText}"
+                                                   Foreground="#FFE0E0E0"
+                                                   FontSize="14"
+                                                   FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                                        <TextBlock Grid.Row="2"
+                                                   Margin="0,10,0,0"
+                                                   Text="{Binding SelectedAddonMetaText}"
+                                                   Foreground="#FFD7D7D7"
+                                                   FontSize="13"
+                                                   FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                                        <Button Grid.Row="3"
+                                                x:Name="DownloadAddonButton"
+                                                Margin="0,14,0,0"
+                                                Width="174"
+                                                Height="40"
+                                                HorizontalAlignment="Left"
+                                                Click="DownloadSelectedAddonButton_Click"
+                                                Background="#FFE3C94A"
+                                                BorderBrush="#FF1F1F1F"
+                                                BorderThickness="2">
+                                            <TextBlock Text="{Binding SelectedAddonActionText}"
+                                                       Foreground="#FF1E1E1E"
+                                                       FontSize="15"
+                                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Minecraft Ten"/>
+                                        </Button>
+                                        <ProgressBar Grid.Row="4"
+                                                     x:Name="DownloadLoadingBar"
+                                                     Margin="0,12,0,0"
+                                                     Width="174"
+                                                     Height="6"
+                                                     HorizontalAlignment="Left"
+                                                     IsIndeterminate="True"
+                                                     Visibility="Collapsed"/>
+                                        <TextBlock Grid.Row="4"
+                                                   x:Name="DownloadStatusText"
+                                                   Margin="0,22,0,0"
+                                                   Foreground="#FFE0E0E0"
+                                                   FontSize="11"
+                                                   FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"
+                                                   Visibility="Collapsed"/>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+
+                            <Border Background="#C9161616"
+                                    BorderBrush="#FF7D7D7D"
+                                    BorderThickness="2"
+                                    Padding="10"
+                                    Margin="0,0,0,16">
+                                <Grid>
+                                    <TextBlock Text="{Binding SelectedAddonDescription}"
+                                               Foreground="White"
+                                               FontSize="13"
+                                               TextWrapping="Wrap"
+                                               FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                                </Grid>
+                            </Border>
+
+                            <TextBlock Text="Related items"
+                                       Style="{StaticResource SectionTitleText}"
+                                       Margin="0,0,0,8"/>
+                            <ScrollViewer x:Name="RelatedScrollViewer"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Disabled"
+                                          Margin="0,0,0,16">
+                                <ItemsControl ItemsSource="{Binding RelatedAddons}"
+                                              ItemTemplate="{StaticResource DetailRowCardTemplate}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </ScrollViewer>
+
+                            <TextBlock Text="More from the same creator"
+                                       Style="{StaticResource SectionTitleText}"
+                                       Margin="0,0,0,8"/>
+                            <ScrollViewer x:Name="CreatorScrollViewer"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Disabled">
+                                <ItemsControl ItemsSource="{Binding CreatorAddons}"
+                                              ItemTemplate="{StaticResource DetailRowCardTemplate}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <Grid x:Name="AddonsLoadingOverlay"
+                      Visibility="Collapsed"
+                      Panel.ZIndex="50"
+                      IsHitTestVisible="True">
+                    <Grid>
+                        <Image Source="/XylarBedrock;component/resources/images/bg/addonsminecraft.png"
+                               Stretch="UniformToFill"
+                               RenderOptions.BitmapScalingMode="Fant">
+                            <Image.Effect>
+                                <BlurEffect Radius="18"/>
+                            </Image.Effect>
+                        </Image>
+                        <Border Background="#E6101010"/>
+                    </Grid>
+                    <Grid>
+                        <Viewbox Width="46"
+                                 Height="46"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center">
+                            <Grid Width="46"
+                                  Height="46">
+                                <Path Style="{StaticResource SpinnerArcStroke}"
+                                      Data="M 23,3 A 20,20 0 1 1 22.9,3"
+                                      StrokeDashArray="0.18 0.82">
+                                    <Path.RenderTransform>
+                                        <RotateTransform x:Name="OverlaySpinnerRotate"
+                                                         CenterX="23"
+                                                         CenterY="23"/>
+                                    </Path.RenderTransform>
+                                </Path>
+                            </Grid>
+                        </Viewbox>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <wv2:WebView2 x:Name="ScraperBrowser"
+                      Width="1"
+                      Height="1"
+                      IsHitTestVisible="False"
+                      Focusable="False"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Top"/>
+        <wv2:WebView2 x:Name="DownloadBrowser"
+                      Width="1"
+                      Height="1"
+                      IsHitTestVisible="False"
+                      Focusable="False"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Top"/>
+    </Grid>
+</Page>
+

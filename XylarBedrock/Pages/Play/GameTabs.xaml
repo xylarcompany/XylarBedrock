@@ -24,21 +24,21 @@
                             <ToolTip Content="{DynamicResource GameTab_PlayButton_Text}"/>
                         </ToggleButton.ToolTip>
                     </ToggleButton>
-                    <ToggleButton x:Name="CreatorToolsButton" Width="Auto" Click="ButtonManager2" Content="{DynamicResource ResourceKey=GameTab_CreatorToolsButton_Text}" Style="{DynamicResource ToolbarButton}">
-                        <ToggleButton.ToolTip>
-                            <ToolTip Content="{DynamicResource GameTab_CreatorToolsButton_Text}"/>
-                        </ToggleButton.ToolTip>
-                    </ToggleButton>
                     <ToggleButton x:Name="InstallationsButton" Width="Auto" Click="ButtonManager2" Content="{DynamicResource ResourceKey=GameTab_InstallationsButton_Text}"  Style="{DynamicResource ToolbarButton}">
                         <ToggleButton.ToolTip>
                             <ToolTip Content="{DynamicResource GameTab_InstallationsButton_Text}"/>
                         </ToggleButton.ToolTip>
                     </ToggleButton>
-                    <!--<ToggleButton x:Name="PatchNotesButton" Width="Auto" Click="ButtonManager2" Content="{DynamicResource ResourceKey=GameTab_PatchNotesButton_Text}" Style="{DynamicResource ToolbarButton}">
+                    <ToggleButton x:Name="FaqButton" Width="Auto" Click="ButtonManager2" Content="{DynamicResource ResourceKey=GameTab_FAQButton_Text}" Style="{DynamicResource ToolbarButton}">
+                        <ToggleButton.ToolTip>
+                            <ToolTip Content="{DynamicResource GameTab_FAQButton_Text}"/>
+                        </ToggleButton.ToolTip>
+                    </ToggleButton>
+                    <ToggleButton x:Name="PatchNotesButton" Width="Auto" Click="ButtonManager2" Content="{DynamicResource ResourceKey=GameTab_PatchNotesButton_Text}" Style="{DynamicResource ToolbarButton}">
                         <ToggleButton.ToolTip>
                             <ToolTip Content="{DynamicResource GameTab_PatchNotesButton_Text}"/>
                         </ToggleButton.ToolTip>
-                    </ToggleButton>-->
+                    </ToggleButton>
                 </StackPanel>
             </Grid>
         </Border>

@@ -16,7 +16,7 @@
 		<UpdateRequired>false</UpdateRequired>
 		<MapFileExtensions>true</MapFileExtensions>
 		<ApplicationRevision>0</ApplicationRevision>
-		<ApplicationVersion>0.0.0.1</ApplicationVersion>
+    <ApplicationVersion>0.0.0.2</ApplicationVersion>
 		<UseApplicationTrust>false</UseApplicationTrust>
 		<BootstrapperEnabled>true</BootstrapperEnabled>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -29,14 +29,14 @@
 		<SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
 		<IsPublishable>True</IsPublishable>
 		<Company>Xylar Inc.</Company>
-		<Product>XylarBedrock v0.0.0.1</Product>
+    <Product>XylarBedrock v0.0.0.2</Product>
 		<PackageId>XylarBedrock</PackageId>
 		<Authors>Xylar Inc. and Mrmariix</Authors>
 		<Copyright>Copyright (c) Xylar Inc. and Mrmariix</Copyright>
-		<Version>0.0.0.1</Version>
-		<FileVersion>0.0.0.1</FileVersion>
-		<AssemblyVersion>0.0.0.1</AssemblyVersion>
-		<InformationalVersion>0.0.0.1</InformationalVersion>
+    <Version>0.0.0.2</Version>
+    <FileVersion>0.0.0.2</FileVersion>
+    <AssemblyVersion>0.0.0.2</AssemblyVersion>
+    <InformationalVersion>0.0.0.2</InformationalVersion>
 		<AnalysisLevel>latest</AnalysisLevel>
 		<SelfContained>false</SelfContained>
 	</PropertyGroup>
@@ -130,6 +130,7 @@
 		<PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.421302">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3912.50" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
 		<PackageReference Include="MimeMapping" Version="3.0.1" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -149,6 +150,14 @@
 		<ProjectReference Include="..\modules\XylarBedrock.UpdateProcessor\XylarBedrock.UpdateProcessor.csproj" />
 		<ProjectReference Include="..\modules\Extensions.NET\JemExtensions.csproj" />
 		<ProjectReference Include="..\modules\HtmlRenderer.WPF\HtmlRenderer.WPF.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\addons\Actions.mcpack">
+			<LogicalName>XylarBedrock.Resources.addons.Actions.mcpack</LogicalName>
+		</EmbeddedResource>
+	</ItemGroup>
+	<ItemGroup>
+		<Resource Include="Resources\addons\actions.jpg" />
 	</ItemGroup>
 	<ItemGroup>
 		<Resource Include="Resources\images\bg\play_screen\1.17_caves_and_cliffs_part_2.jpg" />
@@ -538,7 +547,11 @@
 		<Resource Include="Resources\images\bg\play_screen\other_mid_legacy_console.jpg" />
 	</ItemGroup>
 	<ItemGroup>
-		<Resource Include="Resources\images\bg\stone_texture.png" />
+  <Resource Include="Resources\images\bg\stone_texture.png" />
+  <Resource Include="Resources\images\bg\addonsminecraft.png" />
+	</ItemGroup>
+	<ItemGroup>
+		<Resource Include="Resources\images\icons\addons_icon.png" />
 	</ItemGroup>
 	<ItemGroup>
 		<Resource Include="Resources\images\icons\bedrock_grass_icon.png" />

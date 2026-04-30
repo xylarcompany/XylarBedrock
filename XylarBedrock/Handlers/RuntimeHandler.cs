@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using XylarBedrock.ViewModels;
 
 namespace XylarBedrock.Handlers
 {
@@ -36,59 +37,18 @@ namespace XylarBedrock.Handlers
         }
         public static bool EnableDeveloperMode()
         {
-            // This method now checks Developer Mode status instead of automatically enabling it
-            // Users should enable Developer Mode manually through Windows Settings if they want unprivileged symbolic links
-            System.Diagnostics.Trace.WriteLine("Checking Developer Mode..");
-            if (IsDeveloperModeEnabled())
-            {
-                System.Diagnostics.Trace.WriteLine("Developer mode is enabled - Good to go.");
-                return true;
-            }
-            else
-            {
-                System.Diagnostics.Trace.WriteLine("Developer mode is disabled - Please enable it in windows settings.");
-                MessageBox.Show("You should enable Developer mode in Windows settings for the best XylarBedrock experience.", "Developer Mode Disabled");
-                return false;
-            }
+            System.Diagnostics.Trace.WriteLine("Developer Mode is not required by XylarBedrock.");
+            return true;
         }
 
-        /// <summary>
-        /// Checks if Windows Developer Mode is enabled
-        /// </summary>
         public static bool IsDeveloperModeEnabled()
         {
-            try
-            {
-                RegistryKey localKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, GetCurrentView());
-                localKey = localKey.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock", false);
-                if (localKey != null)
-                {
-                    var value = localKey.GetValue("AllowDevelopmentWithoutDevLicense");
-                    return value is int intValue && intValue == 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine("Could not check Developer Mode status: " + ex.Message);
-            }
             return false;
         }
 
-        /// <summary>
-        /// Shows a user-friendly message about enabling Developer Mode if it's not enabled
-        /// </summary>
         public static void ShowDeveloperModeGuidance()
         {
-            if (!IsDeveloperModeEnabled())
-            {
-                string message = "Please enable Developer Mode in Windows Settings:\n\n" +
-                               "1. Open Windows Settings\n" +
-                               "2. Go to Privacy & security → For developers\n" +
-                               "3. Turn on Developer Mode\n\n" +
-                               "This allows XylarBedrock to run without requiring administrator privileges each time.";
-                
-                MessageBox.Show(message, "Enable Windows Developer Mode", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+            System.Diagnostics.Trace.WriteLine("Developer Mode guidance skipped because it is no longer required.");
         }
 
         private static RegistryView GetCurrentView()
@@ -134,6 +94,70 @@ namespace XylarBedrock.Handlers
         public static void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             Trace.WriteLine(e.Exception.ToString());
+            MarkSessionAsUnclean();
+        }
+
+        public static void OnCurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (e.ExceptionObject is Exception exception)
+            {
+                Trace.WriteLine(exception.ToString());
+            }
+
+            MarkSessionAsUnclean();
+        }
+
+        public static async Task RecoverAfterUnexpectedExitAsync()
+        {
+            if (Properties.LauncherSettings.Default.LastSessionClosedCleanly) return;
+
+            await PerformRecoveryStepsAsync("previous session");
+            MarkRecoveryCheckpoint();
+        }
+
+        public static async Task<bool> RecoverAndRunStartupAsync(Func<Task> startupAction)
+        {
+            if (!Properties.LauncherSettings.Default.LastSessionClosedCleanly)
+            {
+                await RecoverAfterUnexpectedExitAsync();
+            }
+
+            try
+            {
+                await startupAction();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Startup flow failed. Trying recovery once: {ex}");
+                MarkSessionAsUnclean();
+                await PerformRecoveryStepsAsync("startup retry");
+
+                try
+                {
+                    await startupAction();
+                    return true;
+                }
+                catch (Exception retryEx)
+                {
+                    Trace.WriteLine($"Startup retry failed: {retryEx}");
+                    ShowFriendlyStartupMessage(
+                        "XylarBedrock hit a startup issue and could not fully repair itself this time.\n\nPlease close it and try again once.");
+                    return false;
+                }
+            }
+        }
+
+        private static void MarkSessionAsUnclean()
+        {
+            try
+            {
+                Properties.LauncherSettings.Default.LastSessionClosedCleanly = false;
+                Properties.LauncherSettings.Default.Save();
+            }
+            catch
+            {
+            }
         }
 
         public static NLogTraceListener InternalTraceListener { get; set; } = new NLogTraceListener();
@@ -142,6 +166,88 @@ namespace XylarBedrock.Handlers
         {
             Trace.Listeners.Add(InternalTraceListener);
             Trace.AutoFlush = true;
+        }
+
+        private static async Task PerformRecoveryStepsAsync(string reason)
+        {
+            Trace.WriteLine($"Starting launcher recovery: {reason}");
+
+            try
+            {
+                ClearErrorLayer();
+                CleanupLauncherTempFiles();
+                AddonsCatalogHandler.CleanupManagedDownloads();
+                AddonsCatalogHandler.RepairCachedCatalog();
+                await MainDataModel.Default.PackageManager.AutoRefreshBundledModAsync();
+                Trace.WriteLine("Launcher recovery finished.");
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Recovery skipped: {ex}");
+            }
+        }
+
+        private static void CleanupLauncherTempFiles()
+        {
+            string launcherTempDirectory = Path.Combine(Path.GetTempPath(), "XylarBedrock");
+            if (!Directory.Exists(launcherTempDirectory)) return;
+
+            foreach (string filePath in Directory.GetFiles(launcherTempDirectory))
+            {
+                try
+                {
+                    FileInfo fileInfo = new FileInfo(filePath);
+                    bool shouldDelete =
+                        fileInfo.Length == 0 ||
+                        fileInfo.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-6) ||
+                        fileInfo.Extension.Equals(".tmp", StringComparison.OrdinalIgnoreCase) ||
+                        fileInfo.Extension.Equals(".log", StringComparison.OrdinalIgnoreCase) ||
+                        fileInfo.Name.StartsWith("vc_redist", StringComparison.OrdinalIgnoreCase);
+
+                    if (shouldDelete)
+                    {
+                        fileInfo.Delete();
+                    }
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private static void ClearErrorLayer()
+        {
+            try
+            {
+                Application.Current?.Dispatcher.Invoke(() => MainViewModel.Default.SetDialogFrame(null));
+            }
+            catch
+            {
+            }
+        }
+
+        private static void MarkRecoveryCheckpoint()
+        {
+            try
+            {
+                Properties.LauncherSettings.Default.LastSessionClosedCleanly = true;
+                Properties.LauncherSettings.Default.Save();
+            }
+            catch
+            {
+            }
+        }
+
+        private static void ShowFriendlyStartupMessage(string message)
+        {
+            try
+            {
+                Application.Current?.Dispatcher.Invoke(() =>
+                    MessageBox.Show(message, App.DisplayName, MessageBoxButton.OK, MessageBoxImage.Warning));
+            }
+            catch
+            {
+            }
         }
     }
 }

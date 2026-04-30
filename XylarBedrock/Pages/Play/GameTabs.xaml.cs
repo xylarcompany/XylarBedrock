@@ -10,7 +10,7 @@ using System.Windows.Data;
 using System.Windows.Media.Animation;
 using XylarBedrock.Classes;
 using XylarBedrock.Downloaders;
-using XylarBedrock.Pages.Play.CreatorTools;
+using XylarBedrock.Pages.Play.FAQ;
 using XylarBedrock.Pages.Play.Home;
 using XylarBedrock.Pages.Play.Installations;
 using XylarBedrock.Pages.Play.PatchNotes;
@@ -24,7 +24,7 @@ namespace XylarBedrock.Pages.Play
 
         public PlayScreenPage playScreenPage = new PlayScreenPage();
         public InstallationsScreen installationsScreen = new InstallationsScreen();
-        public CreatorToolsPage creatorToolsPage = new CreatorToolsPage();
+        public FaqPage faqPage = new FaqPage();
         public PatchNotesPage patchNotesPage = new PatchNotesPage(PatchNotesDownloader);
 
         private Navigator Navigator { get; set; } = new Navigator();
@@ -36,20 +36,15 @@ namespace XylarBedrock.Pages.Play
 
 
 
-        #region Navigation
-
         public void ResetButtonManager(string buttonName)
         {
             this.Dispatcher.Invoke(() =>
             {
-                // just all buttons list
-                // ya i know this is really bad, i need to learn mvvm instead of doing this shit
-                // but this works fine, at least
                 ToggleButton[] toggleButtons = new ToggleButton[] {
                 PlayButton,
-                CreatorToolsButton,
                 InstallationsButton,
-                //PatchNotesButton
+                FaqButton,
+                PatchNotesButton
             };
 
                 foreach (ToggleButton button in toggleButtons)
@@ -78,8 +73,8 @@ namespace XylarBedrock.Pages.Play
 
                 if (senderName == PlayButton.Name) NavigateToPlayScreen();
                 else if (senderName == InstallationsButton.Name) NavigateToInstallationsPage();
-                else if (senderName == CreatorToolsButton.Name) NavigateToCreatorToolsPage();
-                //else if (senderName == PatchNotesButton.Name) NavigateToPatchNotes();
+                else if (senderName == FaqButton.Name) NavigateToFaqPage();
+                else if (senderName == PatchNotesButton.Name) NavigateToPatchNotes();
             });
         }
 
@@ -95,10 +90,10 @@ namespace XylarBedrock.Pages.Play
             Task.Run(() => Navigator.Navigate(MainPageFrame, installationsScreen));
         }
 
-        public void NavigateToCreatorToolsPage()
+        public void NavigateToFaqPage()
         {
             Navigator.UpdatePageIndex(2);
-            Task.Run(() => Navigator.Navigate(MainPageFrame, creatorToolsPage));
+            Task.Run(() => Navigator.Navigate(MainPageFrame, faqPage));
         }
 
         public void NavigateToPatchNotes()
@@ -106,8 +101,6 @@ namespace XylarBedrock.Pages.Play
             Navigator.UpdatePageIndex(3);
             Task.Run(() => Navigator.Navigate(MainPageFrame, patchNotesPage));
         }
-
-        #endregion
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {

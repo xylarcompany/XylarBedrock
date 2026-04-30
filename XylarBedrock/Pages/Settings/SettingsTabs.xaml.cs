@@ -30,16 +30,10 @@ namespace XylarBedrock.Pages.Settings
             InitializeComponent();
             ButtonManager_Base(GeneralButton.Name);
         }
-
-        #region Navigation
-
         public void ResetButtonManager(string buttonName)
         {
             this.Dispatcher.Invoke(() =>
             {
-                // just all buttons list
-                // ya i know this is really bad, i need to learn mvvm instead of doing this shit
-                // but this works fine, at least
                 List<ToggleButton> toggleButtons = new List<ToggleButton>() {
                 GeneralButton,
                 AboutButton
@@ -91,8 +85,6 @@ namespace XylarBedrock.Pages.Settings
             Navigator.UpdatePageIndex(2);
             Task.Run(() => Navigator.Navigate(SettingsScreenFrame,aboutPage));
         }
-
-        #endregion
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {

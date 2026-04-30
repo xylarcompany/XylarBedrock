@@ -103,16 +103,6 @@
                     <ToolTip Content="{DynamicResource NewsScreen_OfficialTabTitle}"/>
                 </ToggleButton.ToolTip>
             </ToggleButton>
-            <ToggleButton x:Name="ForumsTab" Width="Auto" Click="ButtonManager" Content="{DynamicResource NewsScreen_MinecraftForumsTitle}" Style="{DynamicResource ToolbarButton}">
-                <ToggleButton.ToolTip>
-                    <ToolTip Content="{DynamicResource NewsScreen_MinecraftForumsTitle}"/>
-                </ToggleButton.ToolTip>
-            </ToggleButton>
-            <ToggleButton x:Name="LauncherTab" Width="Auto" Click="ButtonManager" Content="{DynamicResource NewsScreen_LauncherTabTitle}" Style="{DynamicResource ToolbarButton}">
-                <ToggleButton.ToolTip>
-                    <ToolTip Content="{DynamicResource NewsScreen_LauncherTabTitle}"/>
-                </ToggleButton.ToolTip>
-            </ToggleButton>
         </StackPanel>
         <Image Margin="0,15,0,0" Height="68" VerticalAlignment="Top" Source="/XylarBedrock;component/resources/images/logo/logo.png" RenderOptions.BitmapScalingMode="HighQuality"></Image>
         <Separator Padding="0" Margin="0" Grid.Row="1"></Separator>

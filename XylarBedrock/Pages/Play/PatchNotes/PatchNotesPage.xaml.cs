@@ -10,9 +10,6 @@ using XylarBedrock.Downloaders;
 
 namespace XylarBedrock.Pages.Play.PatchNotes
 {
-    /// <summary>
-    /// Логика взаимодействия для PatchNotesPage.xaml
-    /// </summary>
     public partial class PatchNotesPage : Page
     {
         private ChangelogDownloader downloader;

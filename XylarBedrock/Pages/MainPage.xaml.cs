@@ -29,6 +29,7 @@ using XylarBedrock.ViewModels;
 using XylarBedrock.Pages.Settings;
 using XylarBedrock.Pages.Play;
 using XylarBedrock.Pages.News;
+using XylarBedrock.Pages.Addons;
 using XylarBedrock.Pages.Preview;
 using XylarBedrock.Handlers;
 using XylarBedrock.UI.Pages.Common;
@@ -37,13 +38,12 @@ using XylarBedrock.Pages.Toolbar;
 
 namespace XylarBedrock.Pages
 {
-    //TODO: (Later On) Community Content / Personal Donations Section
-
     public partial class MainPage : Page, IDisposable
     {
         private GameTabs GamePage = new GameTabs();
         private SettingsTabs settingsScreenPage = new SettingsTabs();
         private NewsScreenTabs newsScreenPage = new NewsScreenTabs();
+        private AddonsPage addonsPage = new AddonsPage();
 
         private Navigator Navigator { get; set; } = new Navigator(true);
 
@@ -51,6 +51,7 @@ namespace XylarBedrock.Pages
         {
             this.DataContext = MainDataModel.Default;
             InitializeComponent();
+            addonsPage.WarmUpCatalog();
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -58,18 +59,13 @@ namespace XylarBedrock.Pages
             MainDataModel.Default.PackageManager.Cancel();
         }
 
-        #region Navigation
-
         public void ResetButtonManager(string buttonName)
         {
             this.Dispatcher.Invoke(() =>
             {
-                // just all buttons list
-                // ya i know this is really bad, i need to learn mvvm instead of doing this shit
-                // but this works fine, at least
                 List<ToggleButton> toggleButtons = new List<ToggleButton>() { 
-                // main window
                 NewsButton.Button,
+                AddonsButton.Button,
                 BedrockEditionButton.Button,
                 SettingsButton.Button,
             };
@@ -100,6 +96,7 @@ namespace XylarBedrock.Pages
 
                 if (senderName == BedrockEditionButton.Name) NavigateToGamePage();
                 else if (senderName == NewsButton.Name) NavigateToNewsPage();
+                else if (senderName == AddonsButton.Name) NavigateToAddonsPage();
                 else if (senderName == SettingsButton.Name) NavigateToSettings();
             });
 
@@ -126,6 +123,17 @@ namespace XylarBedrock.Pages
 
         }
 
+        public void NavigateToAddonsPage()
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                Navigator.UpdatePageIndex(2);
+                AddonsButton.Button.IsChecked = true;
+                Task.Run(() => Navigator.Navigate(MainWindowFrame, addonsPage));
+            });
+
+        }
+
         public void NavigateToSettings()
         {
             this.Dispatcher.Invoke(() =>
@@ -137,16 +145,17 @@ namespace XylarBedrock.Pages
 
         }
 
-        #endregion
-
-        #region Toolbar Button Events
-
         private void BedrockEditionButton_Click(object sender, EventArgs e)
         {
             if (sender != null && sender is Toolbar_ButtonBase) ButtonManager_Base((sender as Toolbar_ButtonBase).Name);
         }
 
         private void NewsButton_Click(object sender, EventArgs e)
+        {
+            if (sender != null && sender is Toolbar_ButtonBase) ButtonManager_Base((sender as Toolbar_ButtonBase).Name);
+        }
+
+        private void AddonsButton_Click(object sender, EventArgs e)
         {
             if (sender != null && sender is Toolbar_ButtonBase) ButtonManager_Base((sender as Toolbar_ButtonBase).Name);
         }
@@ -166,9 +175,6 @@ namespace XylarBedrock.Pages
         {
 
         }
-
-        #endregion
-
 
     }
 }

@@ -1,5 +1,4 @@
-<Page
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -12,227 +11,297 @@
       Initialized="Page_Initialized"
       MinWidth="728"
       MinHeight="525"
-      Background="{DynamicResource Background.Secondary}">
+      Background="{DynamicResource Background.Tertiary}">
     <Page.Resources>
-        <Style x:Key="AboutCard" TargetType="{x:Type Border}">
-            <Setter Property="Background" Value="#1D2329"/>
-            <Setter Property="BorderBrush" Value="#313C46"/>
+        <Style x:Key="SectionBorder" TargetType="{x:Type Border}">
+            <Setter Property="Background" Value="#FF262626"/>
+            <Setter Property="BorderBrush" Value="#FF3F3F3F"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
             <Setter Property="Padding" Value="18"/>
-            <Setter Property="Margin" Value="0,0,0,18"/>
         </Style>
 
-        <Style x:Key="AboutTitle" TargetType="{x:Type TextBlock}">
+        <Style x:Key="SectionTitle" TargetType="{x:Type TextBlock}">
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontFamily" Value="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
-            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontFamily" Value="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
         </Style>
 
-        <Style x:Key="AboutText" TargetType="{x:Type TextBlock}">
-            <Setter Property="Foreground" Value="#BCD0DF"/>
-            <Setter Property="FontFamily" Value="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+        <Style x:Key="SectionText" TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="#FFD0D0D0"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="FontFamily" Value="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
         </Style>
     </Page.Resources>
 
-    <Grid>
+    <Grid Background="{DynamicResource Background.Tertiary}">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="24,24,24,30">
-                <Border Style="{StaticResource AboutCard}" Background="#1F2932" BorderBrush="#395164">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="260"/>
-                        </Grid.ColumnDefinitions>
+            <StackPanel Margin="16,16,16,22"
+                        MaxWidth="1120"
+                        HorizontalAlignment="Center">
+                <Border BorderBrush="#FF484848"
+                        BorderThickness="1"
+                        Margin="0,0,0,16">
+                    <Grid Height="224">
+                        <Grid.Background>
+                            <ImageBrush TileMode="Tile"
+                                        Viewport="0,0,800,400"
+                                        ViewportUnits="Absolute"
+                                        ImageSource="/XylarBedrock;component/resources/images/bg/stone_texture.png"/>
+                        </Grid.Background>
 
-                        <StackPanel Margin="0,0,20,0">
-                            <TextBlock Text="{x:Static root:App.DisplayName}"
-                                       Foreground="White"
-                                       FontSize="30"
-                                       FontWeight="Bold"
-                                       FontFamily="/XylarBedrock;component/#Noto Sans"/>
-                            <TextBlock Margin="0,8,0,0"
-                                       Text="Built around the official Minecraft for Windows release and signed by Xylar Inc. and Mrmariix."
-                                       Style="{StaticResource AboutText}"/>
-                            <TextBlock Margin="0,18,0,0"
-                                       Text="I always dreamt of being better. Being better than everyone! Well not in a despicable way but... i just hate how people put ads or malware onto their injectors/launchers. We, Xylar Inc. defend ur right to be protected and wish you a good game i guess? BYE!"
-                                       Foreground="White"
-                                       FontSize="15"
-                                       FontStyle="Italic"
-                                       TextWrapping="Wrap"
-                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
-                            <TextBlock Margin="0,14,0,0"
-                                       Text="- Mrmariix"
-                                       Foreground="#9FD3FF"
-                                       FontSize="14"
-                                       FontWeight="SemiBold"
-                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                        <Border Background="#C6141414"/>
 
-                            <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
-                                <Button Content="Join Xylar Inc. Discord"
-                                        Tag="https://discord.gg/CQ6Et3Kws7"
-                                        Click="Button_Click"
-                                        Style="{DynamicResource DialogButton_Green}"
-                                        Height="34"/>
-                                <Button Margin="10,0,0,0"
-                                        x:Name="CheckForUpdatesButton"
-                                        Click="CheckForUpdatesButton_Click"
-                                        Content="Check for updates"
-                                        Style="{DynamicResource DialogButton}"
-                                        Height="34"/>
+                        <Grid Margin="20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="220"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Margin="0,0,18,0"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="{x:Static root:App.DisplayName}"
+                                           Foreground="White"
+                                           FontSize="30"
+                                           FontWeight="Bold"
+                                           FontFamily="/XylarBedrock;component/Resources/fonts/#Minecraft Ten"/>
+                                <TextBlock Margin="0,10,0,0"
+                                           Foreground="#FFDDF6E6"
+                                           FontSize="12"
+                                           FontWeight="Bold"
+                                           FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans">
+                                    <Run Text="{DynamicResource AboutPage_VersionLabel}"/>
+                                    <Run Text="{x:Static root:App.Version}"/>
+                                </TextBlock>
+                                <TextBlock Margin="0,12,0,0"
+                                           Text="{DynamicResource AboutPage_IntroText}"
+                                           Style="{StaticResource SectionText}"/>
+                                <TextBlock Margin="0,14,0,0"
+                                           Text="{DynamicResource AboutPage_QuoteText}"
+                                           Foreground="White"
+                                           FontSize="15"
+                                           FontStyle="Italic"
+                                           TextWrapping="Wrap"
+                                           FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                                <TextBlock Margin="0,10,0,0"
+                                           Text="{DynamicResource AboutPage_Signature}"
+                                           Foreground="#9FD3FF"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
                             </StackPanel>
-                        </StackPanel>
 
-                        <Border Grid.Column="1"
-                                CornerRadius="14"
-                                Background="#151A1F"
-                                BorderBrush="#314555"
-                                BorderThickness="1"
-                                Padding="8">
-                            <Image Source="/XylarBedrock;component/resources/images/credits/xylarinc.png"
-                                   Stretch="UniformToFill"
-                                   RenderOptions.BitmapScalingMode="HighQuality"/>
-                        </Border>
-                    </Grid>
-                </Border>
-
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="18"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0" Style="{StaticResource AboutCard}">
-                        <StackPanel>
-                            <Border CornerRadius="14" ClipToBounds="True" Background="#151A1F">
-                                <Image Height="230"
-                                       Source="/XylarBedrock;component/resources/images/credits/mrmariix.png"
-                                       Stretch="UniformToFill"
+                            <Border Grid.Column="1"
+                                    Background="#B30F0F0F"
+                                    BorderBrush="#FF404040"
+                                    BorderThickness="1"
+                                    Padding="14">
+                                <Image Source="/XylarBedrock;component/resources/images/credits/xylarinc.png"
+                                       Stretch="Uniform"
                                        RenderOptions.BitmapScalingMode="HighQuality"/>
                             </Border>
-                            <TextBlock Margin="0,16,0,0" Text="Mrmariix" Style="{StaticResource AboutTitle}"/>
-                            <TextBlock Margin="0,6,0,0"
-                                       Text="Founder voice, branding direction, and the message behind this build."
-                                       Style="{StaticResource AboutText}"/>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="2" Style="{StaticResource AboutCard}">
-                        <StackPanel>
-                            <Border CornerRadius="14" ClipToBounds="True" Background="#151A1F">
-                                <Image Height="230"
-                                       Source="/XylarBedrock;component/resources/images/credits/SasyIsCool.png"
-                                       Stretch="UniformToFill"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
-                            </Border>
-                            <TextBlock Margin="0,16,0,0" Text="SasyIsCool" Style="{StaticResource AboutTitle}"/>
-                            <TextBlock Margin="0,6,0,0"
-                                       Text="Core support for the Xylar side of the project and one of the faces now featured in About."
-                                       Style="{StaticResource AboutText}"/>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-
-                <Border Style="{StaticResource AboutCard}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="220"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Margin="0,0,18,0">
-                            <TextBlock Text="The Red Shadow" Style="{StaticResource AboutTitle}"/>
-                            <TextBlock Margin="0,8,0,0"
-                                       Text="Special thanks to The Red Shadow for the idea that pushed this application into existence."
-                                       Style="{StaticResource AboutText}"/>
-                            <TextBlock Margin="0,8,0,0"
-                                       Text="That credit now lives here in About together with the rest of the people behind the project."
-                                       Style="{StaticResource AboutText}"/>
-                        </StackPanel>
-
-                        <Border Grid.Column="1"
-                                CornerRadius="14"
-                                ClipToBounds="True"
-                                Background="#151A1F"
-                                BorderBrush="#314555"
-                                BorderThickness="1">
-                            <Image Height="170"
-                                   Source="/XylarBedrock;component/resources/images/credits/the_red_shadow.png"
-                                   Stretch="UniformToFill"
-                                   RenderOptions.BitmapScalingMode="HighQuality"/>
-                        </Border>
+                        </Grid>
                     </Grid>
                 </Border>
 
-                <Border Style="{StaticResource AboutCard}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="18"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel>
-                            <TextBlock Text="Why this build exists" Style="{StaticResource AboutTitle}"/>
-                            <TextBlock Margin="0,8,0,0"
-                                       Text="This version is focused on the official Minecraft for Windows app from Microsoft Store, with cleaner controls and no extra version clutter."
-                                       Style="{StaticResource AboutText}"/>
-                            <TextBlock Margin="0,8,0,0"
-                                       Text="The goal is simple: cleaner launcher flow, less confusion, and fewer shady extras."
-                                       Style="{StaticResource AboutText}"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="Credits" Style="{StaticResource AboutTitle}"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                <Border Width="130" Height="70" CornerRadius="12" Background="#151A1F" BorderBrush="#314555" BorderThickness="1" Padding="12">
-                                    <Image Source="/XylarBedrock;component/resources/images/credits/microsoft_logo.png" Stretch="Uniform"/>
-                                </Border>
-                                <Border Width="130" Height="70" Margin="12,0,0,0" CornerRadius="12" Background="#151A1F" BorderBrush="#314555" BorderThickness="1" Padding="12">
-                                    <Image Source="/XylarBedrock;component/resources/images/credits/mojang_logo.png" Stretch="Uniform"/>
-                                </Border>
-                            </StackPanel>
-                            <TextBlock Margin="0,10,0,0"
-                                       Text="Minecraft for Windows belongs to its respective owners. XylarBedrock is a custom launcher-side experience."
-                                       Style="{StaticResource AboutText}"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <Border Style="{StaticResource AboutCard}" Margin="0,0,0,0">
+                <Border Style="{StaticResource SectionBorder}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel>
-                            <TextBlock Text="Build and links" Style="{StaticResource AboutTitle}"/>
-                            <TextBlock Margin="0,8,0,0" Style="{StaticResource AboutText}">
-                                <Run Text="Current build: "/>
-                                <Run Text="{x:Static root:App.Version}"/>
-                            </TextBlock>
+                        <StackPanel Margin="0,0,18,0">
+                            <TextBlock Text="{DynamicResource AboutPage_LinksTitle}"
+                                       Style="{StaticResource SectionTitle}"/>
                             <TextBlock Margin="0,8,0,0"
-                                       Text="Every startup warning and this About page now point back to Xylar Inc. and Mrmariix."
-                                       Style="{StaticResource AboutText}"/>
+                                       Text="{DynamicResource AboutPage_LinksText}"
+                                       Style="{StaticResource SectionText}"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Tag="https://discord.gg/CQ6Et3Kws7"
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <Button Content="{DynamicResource AboutPage_DiscordButton}"
+                                    Tag="https://discord.gg/CQ6Et3Kws7"
                                     Click="Button_Click"
-                                    Content="Discord"
+                                    Style="{DynamicResource DialogButton_Green}"
+                                    Height="32"/>
+                            <Button Margin="10,0,0,0"
+                                    x:Name="CheckForUpdatesButton"
+                                    Click="CheckForUpdatesButton_Click"
+                                    Content="{DynamicResource AboutPage_CheckUpdatesButton}"
                                     Style="{DynamicResource DialogButton}"
-                                    Height="34"/>
+                                    Height="32"/>
                             <Button Margin="10,0,0,0"
                                     x:Name="ForceUpdateButton"
                                     Click="ForceUpdateButton_Click"
-                                    Content="Get updates"
+                                    Content="{DynamicResource AboutPage_GetUpdatesButton}"
                                     Style="{DynamicResource DialogButton_Green}"
-                                    Height="34"/>
+                                    Height="32"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource SectionBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Margin="0,0,18,0">
+                            <TextBlock Text="{DynamicResource AboutPage_OriginTitle}"
+                                       Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Margin="0,8,0,0"
+                                       Text="{DynamicResource AboutPage_OriginText}"
+                                       Style="{StaticResource SectionText}"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                Content="{DynamicResource AboutPage_GithubButton}"
+                                Tag="https://github.com/BedrockLauncher/BedrockLauncher"
+                                Click="Button_Click"
+                                Style="{DynamicResource DialogButton}"
+                                Height="32"
+                                VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource SectionBorder}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource AboutPage_TeamTitle}"
+                                   Style="{StaticResource SectionTitle}"/>
+                        <TextBlock Margin="0,8,0,0"
+                                   Text="{DynamicResource AboutPage_TeamText}"
+                                   Style="{StaticResource SectionText}"/>
+                    </StackPanel>
+                </Border>
+
+                <WrapPanel Margin="0,0,0,16"
+                           HorizontalAlignment="Center">
+                    <Border Width="286"
+                            Margin="0,0,16,16"
+                            Style="{StaticResource SectionBorder}">
+                        <StackPanel>
+                            <Border Background="#FF1B1B1B"
+                                    BorderBrush="#FF404040"
+                                    BorderThickness="1">
+                                <Image Height="138"
+                                       Source="/XylarBedrock;component/resources/images/credits/mrmariix.png"
+                                       Stretch="UniformToFill"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                            </Border>
+                            <TextBlock Margin="0,14,0,0"
+                                       Text="{DynamicResource AboutPage_MrmariixRole}"
+                                       Foreground="#FFA7D9B8"
+                                       FontSize="11"
+                                       FontWeight="Bold"
+                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                            <TextBlock Margin="0,8,0,0"
+                                       Text="Mrmariix"
+                                       Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Margin="0,8,0,0"
+                                       Text="{DynamicResource AboutPage_MrmariixText}"
+                                       Style="{StaticResource SectionText}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Width="286"
+                            Margin="0,0,16,16"
+                            Style="{StaticResource SectionBorder}">
+                        <StackPanel>
+                            <Border Background="#FF1B1B1B"
+                                    BorderBrush="#FF404040"
+                                    BorderThickness="1">
+                                <Image Height="138"
+                                       Source="/XylarBedrock;component/resources/images/credits/SasyIsCool.png"
+                                       Stretch="UniformToFill"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                            </Border>
+                            <TextBlock Margin="0,14,0,0"
+                                       Text="{DynamicResource AboutPage_SasyRole}"
+                                       Foreground="#FFA7D9B8"
+                                       FontSize="11"
+                                       FontWeight="Bold"
+                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                            <TextBlock Margin="0,8,0,0"
+                                       Text="SasyIsCool"
+                                       Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Margin="0,8,0,0"
+                                       Text="{DynamicResource AboutPage_SasyText}"
+                                       Style="{StaticResource SectionText}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Width="238"
+                            Margin="0,0,0,16"
+                            Style="{StaticResource SectionBorder}">
+                        <StackPanel>
+                            <Border Background="#FF1B1B1B"
+                                    BorderBrush="#FF404040"
+                                    BorderThickness="1">
+                                <Image Height="96"
+                                       Source="/XylarBedrock;component/resources/images/credits/the_red_shadow.png"
+                                       Stretch="UniformToFill"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                            </Border>
+                            <TextBlock Margin="0,14,0,0"
+                                       Text="{DynamicResource AboutPage_RedShadowRole}"
+                                       Foreground="#FFA7D9B8"
+                                       FontSize="11"
+                                       FontWeight="Bold"
+                                       FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"/>
+                            <TextBlock Margin="0,8,0,0"
+                                       Text="The Red Shadow"
+                                       Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Margin="0,8,0,0"
+                                       Text="{DynamicResource AboutPage_RedShadowText}"
+                                       Style="{StaticResource SectionText}"/>
+                        </StackPanel>
+                    </Border>
+                </WrapPanel>
+
+                <Border Style="{StaticResource SectionBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="280"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Margin="0,0,18,0">
+                            <TextBlock Text="{DynamicResource AboutPage_CreditsTitle}"
+                                       Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Margin="0,8,0,0"
+                                       Text="{DynamicResource AboutPage_CreditsText}"
+                                       Style="{StaticResource SectionText}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,6,0,0">
+                                <Border Width="128"
+                                        Height="70"
+                                        Background="#FF1B1B1B"
+                                        BorderBrush="#FF404040"
+                                        BorderThickness="1"
+                                        Padding="12">
+                                    <Image Source="/XylarBedrock;component/resources/images/credits/microsoft_logo.png"
+                                           Stretch="Uniform"/>
+                                </Border>
+                                <Border Width="128"
+                                        Height="70"
+                                        Margin="12,0,0,0"
+                                        Background="#FF1B1B1B"
+                                        BorderBrush="#FF404040"
+                                        BorderThickness="1"
+                                        Padding="12">
+                                    <Image Source="/XylarBedrock;component/resources/images/credits/mojang_logo.png"
+                                           Stretch="Uniform"/>
+                                </Border>
+                            </StackPanel>
                         </StackPanel>
                     </Grid>
                 </Border>

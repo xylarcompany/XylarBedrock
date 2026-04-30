@@ -8,69 +8,56 @@
       mc:Ignorable="d"
       Title="{DynamicResource SettingsTab_Title}"
       Background="{DynamicResource Background.Secondary}">
-    <Grid Background="{DynamicResource Background.Secondary}" ClipToBounds="True">
+    <Grid Background="{DynamicResource Background.Primary}" ClipToBounds="True">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="84"/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <Border Margin="24,24,24,14"
-                Padding="22"
-                CornerRadius="18"
-                Background="#1E252B"
-                BorderBrush="#32414E"
-                BorderThickness="1">
+        <Border Grid.Row="0"
+                Background="{DynamicResource Background.Primary}"
+                BorderBrush="Transparent"
+                BorderThickness="0">
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+                <Label Content="{DynamicResource SettingsTab_Title}"
+                       Margin="12,27,600,0"
+                       Style="{DynamicResource TabTitle}"/>
 
-                <StackPanel>
-                    <TextBlock Text="{DynamicResource SettingsTab_Title}"
-                               Foreground="White"
-                               FontSize="26"
-                               FontWeight="Bold"
-                               FontFamily="/XylarBedrock;component/#Noto Sans"/>
-                    <TextBlock Margin="0,6,0,0"
-                               Text="Clean controls for the official Minecraft for Windows setup."
-                               Foreground="#B7C8D6"
-                               FontSize="13"
-                               TextWrapping="Wrap"
-                               FontFamily="/XylarBedrock;component/#Noto Sans"/>
-                </StackPanel>
-
-                <StackPanel Grid.Row="1"
-                            Margin="0,18,0,0"
+                <StackPanel HorizontalAlignment="Left"
+                            Height="35"
+                            VerticalAlignment="Top"
                             Orientation="Horizontal"
-                            HorizontalAlignment="Left">
+                            Margin="5,49,0,0">
                     <ToggleButton x:Name="GeneralButton"
-                                  Width="150"
-                                  Margin="0,0,10,0"
+                                  Width="Auto"
                                   Click="ButtonManager"
                                   Content="{DynamicResource SettingsTab_GeneralButton}"
                                   Style="{DynamicResource ToolbarButton}"
-                                  IsChecked="True"/>
+                                  IsChecked="True">
+                        <ToggleButton.ToolTip>
+                            <ToolTip Content="{DynamicResource SettingsTab_GeneralButton}"/>
+                        </ToggleButton.ToolTip>
+                    </ToggleButton>
                     <ToggleButton x:Name="AboutButton"
-                                  Width="150"
+                                  Width="Auto"
                                   Click="ButtonManager"
                                   Content="{DynamicResource SettingsTab_AboutButton}"
-                                  Style="{DynamicResource ToolbarButton}"/>
+                                  Style="{DynamicResource ToolbarButton}">
+                        <ToggleButton.ToolTip>
+                            <ToolTip Content="{DynamicResource SettingsTab_AboutButton}"/>
+                        </ToggleButton.ToolTip>
+                    </ToggleButton>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <Border Grid.Row="1"
-                Margin="24,0,24,24"
-                CornerRadius="18"
-                Background="{DynamicResource Background.Tertiary}"
-                BorderBrush="#2B2F33"
-                BorderThickness="1">
-            <Frame x:Name="SettingsScreenFrame"
-                   ClipToBounds="True"
-                   Focusable="False"
-                   NavigationUIVisibility="Hidden"
-                   com:DisableNavigation.Disable="True"/>
-        </Border>
+        <Grid Grid.Row="1" Background="{DynamicResource Background.Tertiary}"/>
+
+        <Frame Grid.Row="1"
+               x:Name="SettingsScreenFrame"
+               ClipToBounds="True"
+               Focusable="False"
+               NavigationUIVisibility="Hidden"
+               com:DisableNavigation.Disable="True"/>
     </Grid>
 </Page>

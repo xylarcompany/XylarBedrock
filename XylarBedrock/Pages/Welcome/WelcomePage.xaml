@@ -8,18 +8,93 @@
       xmlns:local="clr-namespace:XylarBedrock.Pages.Welcome"
       mc:Ignorable="d" 
       d:DesignHeight="639" d:DesignWidth="1016"
-      Title="WelcomePage" Foreground="White" Initialized="Page_Initialized">
-    <Page.Background>
-        <ImageBrush ImageSource="/XylarBedrock;component/resources/images/bg/firstlaunchbackground.jpg" Stretch="UniformToFill"/>
-    </Page.Background>
-    <Grid Margin="0" Background="#7F000000">
-        <con:LanguageCombobox HorizontalAlignment="Left" Margin="20,20" FontSize="14" VerticalAlignment="Top" Padding="10,4,5,3" x:Name="LanguageCombobox"></con:LanguageCombobox>
-        <TextBlock Foreground="white" FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans" FontSize="11" FontWeight="Bold" Text="{DynamicResource MainWindow_Disclaimer}" Margin="20,20" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
-        <Border CornerRadius="2" Background="#FF262626" Width="600" Height="258" VerticalAlignment="Center" HorizontalAlignment="Center">
+      Title="WelcomePage" Foreground="White" Initialized="Page_Initialized"
+      Background="#FF121212">
+    <Grid Margin="0">
+        <Grid>
+            <Image Source="/XylarBedrock;component/resources/images/bg/firstlaunchbackground.jpg"
+                   Stretch="UniformToFill"
+                   RenderOptions.BitmapScalingMode="Fant">
+                <Image.Effect>
+                    <BlurEffect Radius="5"/>
+                </Image.Effect>
+            </Image>
+            <Border Background="#C8101010"/>
+        </Grid>
+
+        <Border Width="980"
+                Height="612"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="#FF232323"
+                BorderBrush="#FF0D0D0D"
+                BorderThickness="2">
             <Grid SnapsToDevicePixels="True">
-                <Frame com:DisableNavigation.Disable="True" x:Name="WelcomePageFrame" Margin="2,2,2,2" NavigationUIVisibility="Hidden" Source="/Pages/Welcome/WelcomePageOne.xaml"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="124"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="34"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0"
+                        Background="#FF303030"
+                        BorderBrush="#FF101010"
+                        BorderThickness="0,0,0,2">
+                    <Grid>
+                        <Border Background="#1AFFFFFF"/>
+                        <Grid Margin="28,14,28,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel VerticalAlignment="Center">
+                                <Image Source="/XylarBedrock;component/resources/images/logo/logo.png"
+                                       Height="62"
+                                       HorizontalAlignment="Left"
+                                       Stretch="Uniform"/>
+                                <TextBlock Text="FIRST-TIME SETUP"
+                                           Margin="3,8,0,0"
+                                           Foreground="#FFF0F0F0"
+                                           FontSize="12"
+                                           FontFamily="/XylarBedrock;component/Resources/fonts/#Minecraft Ten"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Margin="0,6,0,0">
+                                <con:LanguageCombobox HorizontalAlignment="Right"
+                                                      FontSize="14"
+                                                      Padding="10,4,5,3"
+                                                      x:Name="LanguageCombobox"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1"
+                        Margin="18,18,18,10"
+                        Background="#FF2A2A2A"
+                        BorderBrush="#FF111111"
+                        BorderThickness="2">
+                    <Frame com:DisableNavigation.Disable="True"
+                           x:Name="WelcomePageFrame"
+                           Margin="0"
+                           NavigationUIVisibility="Hidden"
+                           Source="/Pages/Welcome/WelcomePageOne.xaml"/>
+                </Border>
+
+                <TextBlock Grid.Row="2"
+                           Foreground="#FFE0E0E0"
+                           FontFamily="/XylarBedrock;component/Resources/fonts/#Noto Sans"
+                           FontSize="11"
+                           FontWeight="Bold"
+                           Text="{DynamicResource MainWindow_Disclaimer}"
+                           Margin="18,0,18,0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"/>
             </Grid>
         </Border>
     </Grid>
 </Page>
-

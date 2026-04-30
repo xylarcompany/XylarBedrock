@@ -52,6 +52,11 @@ namespace XylarBedrock
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             MainViewModel.Default.AttemptClose(sender, e);
+            if (!e.Cancel)
+            {
+                Properties.LauncherSettings.Default.LastSessionClosedCleanly = true;
+                Properties.LauncherSettings.Default.Save();
+            }
         }
         private async void Window_Initialized(object sender, EventArgs e)
         {
@@ -62,8 +67,16 @@ namespace XylarBedrock
 
             if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
             {
-                await Program.OnApplicationLoaded();
-                await MainDataModel.Default.PackageManager.AutoRefreshBundledModAsync();
+                bool startupReady = await RuntimeHandler.RecoverAndRunStartupAsync(async () =>
+                {
+                    await Program.OnApplicationLoaded();
+                    await MainDataModel.Default.PackageManager.AutoRefreshBundledModAsync();
+                });
+
+                if (!startupReady) return;
+
+                Properties.LauncherSettings.Default.LastSessionClosedCleanly = false;
+                Properties.LauncherSettings.Default.Save();
                 MainPage.NavigateToGamePage();
                 StartupArgsHandler.RunStartupArgs();
 

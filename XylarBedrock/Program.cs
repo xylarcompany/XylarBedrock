@@ -38,7 +38,6 @@ namespace XylarBedrock
             Trace.WriteLine("Application Starting...");
             if (/*CheckForWindowsVersion() &&*/ CheckForVCRuntime())
             {
-                RuntimeHandler.EnableDeveloperMode();
                 var application = new App();
                 application.Startup += OnApplicationInitalizing;
                 application.InitializeComponent();

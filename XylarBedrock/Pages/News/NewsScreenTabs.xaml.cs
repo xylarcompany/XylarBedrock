@@ -18,20 +18,13 @@ using System.Diagnostics;
 using System.Windows.Controls.Primitives;
 using XylarBedrock.Handlers;
 using XylarBedrock.UI.Components;
-using XylarBedrock.Pages.News.RSS;
 using XylarBedrock.Pages.News.Offical;
-using XylarBedrock.Pages.News.Launcher;
 
 namespace XylarBedrock.Pages.News
 {
     public partial class NewsScreenTabs : Page
     {
-
-
-        private RSSNewsPage communityNewsPage = new RSSNewsPage(ViewModels.RSSViewModel.MinecraftCommunity);
         private OfficalNewsPage javaNewsPage = new OfficalNewsPage();
-        private RSSNewsPage forumsNewsPage = new RSSNewsPage(ViewModels.RSSViewModel.MinecraftForums);
-        private LauncherNewsPage launcherNewsPage;
 
         private Navigator Navigator { get; set; } = new Navigator();
 
@@ -41,7 +34,6 @@ namespace XylarBedrock.Pages.News
         {
             InitializeComponent();
             LastTabName = JavaTab.Name;
-            launcherNewsPage = new LauncherNewsPage();
         }
 
 
@@ -51,19 +43,12 @@ namespace XylarBedrock.Pages.News
              Task.Run(() => ButtonManager_Base(LastTabName));
         }
 
-        #region Navigation
-
         public void ResetButtonManager(string buttonName)
         {
             this.Dispatcher.Invoke(() =>
             {
-                // just all buttons list
-                // ya i know this is really bad, i need to learn mvvm instead of doing this shit
-                // but this works fine, at least
                 List<ToggleButton> toggleButtons = new List<ToggleButton>() {
                 JavaTab,
-                ForumsTab,
-                LauncherTab
             };
 
                 foreach (ToggleButton button in toggleButtons) { button.IsChecked = false; }
@@ -93,8 +78,6 @@ namespace XylarBedrock.Pages.News
                 ResetButtonManager(senderName);
 
                 if (senderName == JavaTab.Name) NavigateToJavaNews();
-                else if (senderName == ForumsTab.Name) NavigateToForumNews();
-                else if (senderName == LauncherTab.Name) NavigateToLauncherNews();
             });
         }
 
@@ -105,28 +88,9 @@ namespace XylarBedrock.Pages.News
             LastTabName = JavaTab.Name;
         }
 
-        public void NavigateToForumNews()
-        {
-            Navigator.UpdatePageIndex(2);
-            Task.Run(() => Navigator.Navigate(ContentFrame, forumsNewsPage));
-            LastTabName = ForumsTab.Name;
-        }
-        public void NavigateToLauncherNews()
-        {
-            Navigator.UpdatePageIndex(3);
-            Task.Run(() => Navigator.Navigate(ContentFrame, launcherNewsPage));
-            LastTabName = LauncherTab.Name;
-        }
-
-
-        #endregion
-
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
-
-            if (LastTabName.Equals(LauncherTab.Name)) _ = launcherNewsPage.RefreshNews();
-            else if (LastTabName.Equals(ForumsTab.Name)) forumsNewsPage.RefreshNews();
-            else if (LastTabName.Equals(JavaTab.Name)) javaNewsPage.RefreshNews();
+            if (LastTabName.Equals(JavaTab.Name)) javaNewsPage.RefreshNews();
         }
     }
 }

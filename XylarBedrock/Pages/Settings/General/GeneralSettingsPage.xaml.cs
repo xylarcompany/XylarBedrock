@@ -21,13 +21,8 @@ using System.IO;
 
 namespace XylarBedrock.Pages.Settings.General
 {
-    /// <summary>
-    /// Логика взаимодействия для GeneralSettingsPage.xaml
-    /// </summary>
     public partial class GeneralSettingsPage : Page
     {
-
-
         private bool TEMP_PortableModeState;
         private string TEMP_FixedDirectoryState = string.Empty;
 
@@ -68,7 +63,6 @@ namespace XylarBedrock.Pages.Settings.General
 
         private void useFixedInstallLocation_Click(object sender, RoutedEventArgs e)
         {
-            // get and save value of checkbox
             switch (portableModeCheckBox.IsChecked)
             {
                 case true:
