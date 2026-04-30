@@ -56,29 +56,30 @@ namespace XylarBedrock.Handlers
             {
                 StartTask();
                 MainDataModel.Default.ProgressBarState.SetProgressBarState(LauncherState.isLaunching);
-                if (await Launcher.LaunchUriAsync(new Uri($"{Constants.GetUri(v.Type)}:?Editor={LaunchEditor}")))
-                {
-                    Trace.WriteLine("App launch finished!");
-                    if (!KeepLauncherOpen)
-                        await Application.Current.Dispatcher.InvokeAsync(() => Application.Current.MainWindow.Close());
-                    else
-                        await GetGameHandle(Constants.MINECRAFT_PROCESS_NAME);
-                }
-                else if (!LaunchEditor)
-                {
-                    Trace.WriteLine($"Failed to open {Constants.GetUri(v.Type)} URI. Attempting package launch.");
+                bool launchRequested = await TryLaunchMinecraftAsync(v.Type, LaunchEditor);
 
-                    AppActivationResult activationResult = null;
-                    var pkg = await AppDiagnosticInfo.RequestInfoForPackageAsync(Constants.GetPackageFamily(v.Type));
-                    if (pkg.Count > 0)
-                        activationResult = await pkg[0].LaunchAsync();
-                    if (KeepLauncherOpen && activationResult != null)
-                        await GetGameHandle(Constants.MINECRAFT_PROCESS_NAME);
+                if (launchRequested)
+                {
                     Trace.WriteLine("App launch finished!");
+
+                    EndTask();
+
+                    if (!KeepLauncherOpen)
+                    {
+                        await Application.Current.Dispatcher.InvokeAsync(() => Application.Current.MainWindow.Close());
+                    }
+                    else
+                    {
+                        _ = GetGameHandle(GetKnownMinecraftProcessNames(v.Type));
+                    }
                 }
                 else
                 {
-                    SetException(new AppLaunchFailedException($"Impossible to launch Editor: Failed to open {Constants.GetUri(v.Type)} URI", new Exception()));
+                    EndTask();
+                    string message = LaunchEditor
+                        ? $"Impossible to launch Editor: Failed to open {Constants.GetUri(v.Type)} URI"
+                        : "Minecraft for Windows could not be started from any detected installation.";
+                    SetException(new AppLaunchFailedException(message, new Exception()));
                 }
             }
             catch (Exception e)
@@ -90,16 +91,31 @@ namespace XylarBedrock.Handlers
 
         public bool IsOfficialStoreReleaseInstalled()
         {
-            return PM.FindPackagesForUser(string.Empty, Constants.GetPackageFamily(VersionType.Release)).Any();
+            return GetInstalledMinecraftPackages(VersionType.Release).Any();
         }
 
         public string GetOfficialStorePackageVersionString()
         {
-            var package = PM.FindPackagesForUser(string.Empty, Constants.GetPackageFamily(VersionType.Release)).FirstOrDefault();
+            var package = GetInstalledMinecraftPackages(VersionType.Release)
+                .OrderByDescending(pkg => pkg.Id.Version.Major)
+                .ThenByDescending(pkg => pkg.Id.Version.Minor)
+                .ThenByDescending(pkg => pkg.Id.Version.Build)
+                .ThenByDescending(pkg => pkg.Id.Version.Revision)
+                .FirstOrDefault();
+
             if (package == null) return string.Empty;
 
             PackageVersion version = package.Id.Version;
             return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+        }
+
+        public IReadOnlyList<string> GetInstalledMinecraftDirectories(VersionType type)
+        {
+            return GetInstalledMinecraftPackages(type)
+                .Select(GetInstalledLocationPath)
+                .Where(path => !string.IsNullOrWhiteSpace(path))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
         }
 
         public void ShowOfficialStoreRequirementMessage()
@@ -412,20 +428,165 @@ namespace XylarBedrock.Handlers
 
         #region Private Throwable Methods
 
-        private async Task GetGameHandle(string processName)
+        private async Task<bool> TryLaunchMinecraftAsync(VersionType type, bool launchEditor)
+        {
+            if (await TryLaunchMinecraftByUriAsync(type, launchEditor))
+            {
+                return true;
+            }
+
+            if (launchEditor)
+            {
+                return false;
+            }
+
+            Trace.WriteLine($"Failed to open {Constants.GetUri(type)} URI. Trying installed Minecraft packages instead.");
+            return await TryLaunchInstalledMinecraftAsync(type);
+        }
+
+        private static async Task<bool> TryLaunchMinecraftByUriAsync(VersionType type, bool launchEditor)
+        {
+            try
+            {
+                return await Launcher.LaunchUriAsync(new Uri($"{Constants.GetUri(type)}:?Editor={launchEditor}"));
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Minecraft URI launch failed: {ex}");
+                return false;
+            }
+        }
+
+        private async Task<bool> TryLaunchInstalledMinecraftAsync(VersionType type)
+        {
+            foreach (Package package in GetInstalledMinecraftPackages(type))
+            {
+                if (await TryLaunchPackageEntriesAsync(package))
+                {
+                    return true;
+                }
+            }
+
+            try
+            {
+                var diagnosticPackages =
+                    await AppDiagnosticInfo.RequestInfoForPackageAsync(Constants.GetPackageFamily(type));
+
+                foreach (AppDiagnosticInfo diagnosticPackage in diagnosticPackages)
+                {
+                    try
+                    {
+                        AppActivationResult activationResult = await diagnosticPackage.LaunchAsync();
+                        if (activationResult != null)
+                        {
+                            return true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.WriteLine($"Diagnostic launch failed for package '{diagnosticPackage.AppInfo.AppUserModelId}': {ex}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"AppDiagnosticInfo launch fallback failed: {ex}");
+            }
+
+            foreach (Package package in GetInstalledMinecraftPackages(type))
+            {
+                if (TryLaunchInstalledExecutable(package))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> TryLaunchPackageEntriesAsync(Package package)
+        {
+            try
+            {
+                var appEntries = await package.GetAppListEntriesAsync();
+                foreach (var appEntry in appEntries)
+                {
+                    if (await appEntry.LaunchAsync())
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"AppListEntry launch failed for package '{package.Id.FullName}': {ex}");
+            }
+
+            return false;
+        }
+
+        private static bool TryLaunchInstalledExecutable(Package package)
+        {
+            foreach (string executablePath in GetInstalledExecutablePaths(package))
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = executablePath,
+                        WorkingDirectory = Path.GetDirectoryName(executablePath) ?? AppContext.BaseDirectory,
+                        UseShellExecute = true
+                    });
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine($"Direct executable launch failed for '{executablePath}': {ex}");
+                }
+            }
+
+            return false;
+        }
+
+        private async Task GetGameHandle(IEnumerable<string> processNames)
         {
             await Task.Run(() =>
             {
                 try
                 {
-                    Process[] MinecraftProcesses = Process.GetProcessesByName(processName);
-                    while (MinecraftProcesses.Length == 0)
-                        Process.GetProcessesByName(processName);
+                    string[] candidateNames = processNames?
+                        .Where(name => !string.IsNullOrWhiteSpace(name))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToArray() ?? Array.Empty<string>();
 
-                    if (MinecraftProcesses.Length == 1)
+                    if (candidateNames.Length == 0)
+                    {
+                        candidateNames = new[] { Constants.MINECRAFT_PROCESS_NAME };
+                    }
+
+                    Process[] minecraftProcesses = Array.Empty<Process>();
+                    Stopwatch waitTimer = Stopwatch.StartNew();
+
+                    while (waitTimer.Elapsed < TimeSpan.FromSeconds(35))
+                    {
+                        minecraftProcesses = candidateNames
+                            .SelectMany(Process.GetProcessesByName)
+                            .GroupBy(process => process.Id)
+                            .Select(group => group.First())
+                            .ToArray();
+
+                        if (minecraftProcesses.Length > 0)
+                        {
+                            break;
+                        }
+
+                        Thread.Sleep(500);
+                    }
+
+                    if (minecraftProcesses.Length >= 1)
                     {
                         MainDataModel.Default.ProgressBarState.SetGameRunningStatus(true);
-                        GameHandle = MinecraftProcesses[0];
+                        GameHandle = minecraftProcesses[0];
                         GameHandle.EnableRaisingEvents = true;
                         GameHandle.Exited += OnPackageExit;
 
@@ -442,7 +603,7 @@ namespace XylarBedrock.Handlers
                     }
                     else
                     {
-                        Trace.WriteLine("Failed to attach Minecraft process: Too many processes found");
+                        Trace.WriteLine("Minecraft launch request was sent, but no game process was found before timeout.");
                         GameHandle = null;
                         MainDataModel.Default.ProgressBarState.SetGameRunningStatus(false);
                     }
@@ -455,12 +616,102 @@ namespace XylarBedrock.Handlers
                 {
                     throw new PackageProcessHookFailedException(e);
                 }
-                finally
-                {
-                    EndTask();
-                }
             });
 
+        }
+
+        private IEnumerable<Package> GetInstalledMinecraftPackages(VersionType type)
+        {
+            try
+            {
+                return PM.FindPackagesForUser(string.Empty, Constants.GetPackageFamily(type))
+                    .OrderByDescending(pkg => pkg.Id.Version.Major)
+                    .ThenByDescending(pkg => pkg.Id.Version.Minor)
+                    .ThenByDescending(pkg => pkg.Id.Version.Build)
+                    .ThenByDescending(pkg => pkg.Id.Version.Revision)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Failed to enumerate Minecraft packages: {ex}");
+                return Enumerable.Empty<Package>();
+            }
+        }
+
+        private static string GetInstalledLocationPath(Package package)
+        {
+            try
+            {
+                return package?.InstalledLocation?.Path ?? string.Empty;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Could not read package location for '{package?.Id.FullName}': {ex.Message}");
+                return string.Empty;
+            }
+        }
+
+        private IEnumerable<string> GetKnownMinecraftProcessNames(VersionType type)
+        {
+            HashSet<string> processNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                Constants.MINECRAFT_PROCESS_NAME
+            };
+
+            foreach (Package package in GetInstalledMinecraftPackages(type))
+            {
+                foreach (string executablePath in GetInstalledExecutablePaths(package))
+                {
+                    string processName = Path.GetFileNameWithoutExtension(executablePath);
+                    if (!string.IsNullOrWhiteSpace(processName))
+                    {
+                        processNames.Add(processName);
+                    }
+                }
+            }
+
+            return processNames;
+        }
+
+        private static IEnumerable<string> GetInstalledExecutablePaths(Package package)
+        {
+            string installPath = GetInstalledLocationPath(package);
+            if (string.IsNullOrWhiteSpace(installPath))
+            {
+                yield break;
+            }
+
+            string manifestPath = Path.Combine(installPath, "AppxManifest.xml");
+            if (!File.Exists(manifestPath))
+            {
+                yield break;
+            }
+
+            XDocument manifestDocument;
+            try
+            {
+                manifestDocument = XDocument.Load(manifestPath);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Could not read package manifest '{manifestPath}': {ex}");
+                yield break;
+            }
+
+            foreach (XElement applicationElement in manifestDocument.Descendants().Where(x => x.Name.LocalName == "Application"))
+            {
+                string executableRelativePath = applicationElement.Attribute("Executable")?.Value;
+                if (string.IsNullOrWhiteSpace(executableRelativePath))
+                {
+                    continue;
+                }
+
+                string executablePath = Path.Combine(installPath, executableRelativePath);
+                if (File.Exists(executablePath))
+                {
+                    yield return executablePath;
+                }
+            }
         }
 
         private async Task DownloadAndExtractPackage(MCVersion v)
