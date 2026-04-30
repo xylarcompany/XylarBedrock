@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using XylarBedrock.Localization.Language;
 using XylarBedrock.ViewModels;
 
 namespace XylarBedrock.Handlers
@@ -59,36 +60,24 @@ namespace XylarBedrock.Handlers
         }
         public static void ValidateOSArchitecture()
         {
-            var Architecture = RuntimeInformation.OSArchitecture;
-            bool canRun;
-            switch (Architecture)
+            Architecture architecture = RuntimeInformation.OSArchitecture;
+            switch (architecture)
             {
                 case Architecture.Arm:
-                    ShowError("Unsupported Architexture", "This application can not run on ARM computers");
-                    canRun = false;
+                    Trace.WriteLine("ARM device detected. The launcher will try to continue in compatibility mode.");
                     break;
                 case Architecture.Arm64:
-                    ShowError("Unsupported Architexture", "This application can not run on ARM computers");
-                    canRun = false;
+                    Trace.WriteLine("ARM64 device detected. The launcher will try to continue in compatibility mode.");
                     break;
                 case Architecture.X86:
-                    canRun = true;
+                    Trace.WriteLine("x86 device detected.");
                     break;
                 case Architecture.X64:
-                    canRun = true;
+                    Trace.WriteLine("x64 device detected.");
                     break;
                 default:
-                    ShowError("Unsupported Architexture", "Unable to determine architexture, not supported");
-                    canRun = false;
+                    Trace.WriteLine("Unknown device architecture detected. The launcher will still try to start.");
                     break;
-            }
-
-            if (!canRun) Environment.Exit(0);
-
-
-            void ShowError(string title, string message)
-            {
-                MessageBox.Show(message, title);
             }
         }
         public static void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
@@ -125,6 +114,7 @@ namespace XylarBedrock.Handlers
             try
             {
                 await startupAction();
+                MarkRecoveryCheckpoint();
                 return true;
             }
             catch (Exception ex)
@@ -136,14 +126,13 @@ namespace XylarBedrock.Handlers
                 try
                 {
                     await startupAction();
+                    MarkRecoveryCheckpoint();
                     return true;
                 }
                 catch (Exception retryEx)
                 {
                     Trace.WriteLine($"Startup retry failed: {retryEx}");
-                    ShowFriendlyStartupMessage(
-                        "XylarBedrock hit a startup issue and could not fully repair itself this time.\n\nPlease close it and try again once.");
-                    return false;
+                    return ContinueWithMinimalStartupFallback(retryEx);
                 }
             }
         }
@@ -238,15 +227,24 @@ namespace XylarBedrock.Handlers
             }
         }
 
-        private static void ShowFriendlyStartupMessage(string message)
+        private static bool ContinueWithMinimalStartupFallback(Exception startupException)
         {
             try
             {
-                Application.Current?.Dispatcher.Invoke(() =>
-                    MessageBox.Show(message, App.DisplayName, MessageBoxButton.OK, MessageBoxImage.Warning));
+                Trace.WriteLine("Trying minimal startup fallback.");
+                Trace.WriteLine(startupException.ToString());
+                ClearErrorLayer();
+                LanguageManager.Init();
+                MainDataModel.Default.LoadConfig();
+                MainDataModel.Default.ProgressBarState.PlayButtonLanguageChanged =
+                    !MainDataModel.Default.ProgressBarState.PlayButtonLanguageChanged;
+                MarkRecoveryCheckpoint();
+                Trace.WriteLine("Minimal startup fallback completed.");
+                return true;
             }
             catch
             {
+                return true;
             }
         }
     }

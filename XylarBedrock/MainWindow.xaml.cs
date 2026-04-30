@@ -70,7 +70,6 @@ namespace XylarBedrock
                 bool startupReady = await RuntimeHandler.RecoverAndRunStartupAsync(async () =>
                 {
                     await Program.OnApplicationLoaded();
-                    await MainDataModel.Default.PackageManager.AutoRefreshBundledModAsync();
                 });
 
                 if (!startupReady) return;
@@ -78,6 +77,18 @@ namespace XylarBedrock
                 Properties.LauncherSettings.Default.LastSessionClosedCleanly = false;
                 Properties.LauncherSettings.Default.Save();
                 MainPage.NavigateToGamePage();
+                Program.StartDeferredStartupWork();
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await MainDataModel.Default.PackageManager.AutoRefreshBundledModAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.WriteLine($"Bundled mod refresh skipped during startup: {ex}");
+                    }
+                });
                 StartupArgsHandler.RunStartupArgs();
 
                 bool isFirstLaunch = Properties.LauncherSettings.Default.GetIsFirstLaunch(MainDataModel.Default.Config.profiles.Count());

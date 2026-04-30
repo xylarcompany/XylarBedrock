@@ -45,16 +45,24 @@ namespace XylarBedrock.ViewModels
 
         public async Task LoadVersions(bool onLoad = false)
         {
-            await Application.Current.Dispatcher.Invoke(async () =>
+            if (IsVersionsUpdating) return;
+            IsVersionsUpdating = true;
+
+            try
             {
-                if (IsVersionsUpdating) return;
-                IsVersionsUpdating = true;
+                if (Application.Current?.Dispatcher == null || Application.Current.Dispatcher.CheckAccess())
+                {
+                    await PackageManager.VersionDownloader.UpdateVersionList(Versions, onLoad);
+                    return;
+                }
 
-                await PackageManager.VersionDownloader.UpdateVersionList(Versions, onLoad);
-
+                await await Application.Current.Dispatcher.InvokeAsync(
+                    () => PackageManager.VersionDownloader.UpdateVersionList(Versions, onLoad));
+            }
+            finally
+            {
                 IsVersionsUpdating = false;
-            });
-
+            }
         }
         public void LoadConfig()
         {

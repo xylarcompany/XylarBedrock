@@ -74,21 +74,8 @@ namespace XylarBedrock.Pages.Welcome
 
             void Page3()
             {
-                if (MainDataModel.Default.Config.profiles.Count() != 0)
-                {
-                    Properties.LauncherSettings.Default.CurrentProfileUUID = MainDataModel.Default.Config.profiles.FirstOrDefault().Key;
-                    Properties.LauncherSettings.Default.Save();
-                    MoveToPage(5);
-                }
-                else
-                {
-                    if (pageThree == null)
-                    {
-                        pageThree = new WelcomePageThree();
-                        welcomePage.WelcomePageFrame.Navigate(pageThree);
-                    }
-                    else { welcomePage.WelcomePageFrame.Navigate(pageThree); }
-                }
+                pageThree = new WelcomePageThree();
+                welcomePage.WelcomePageFrame.Navigate(pageThree);
             }
 
 

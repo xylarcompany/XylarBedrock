@@ -86,12 +86,19 @@ namespace XylarBedrock.ViewModels
         }
         public async Task ShowWaitingDialog(Func<Task> action)
         {
-            await Application.Current.Dispatcher.Invoke(async () =>
+            await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 SetDialogFrame(new WaitingPage());
-                await action();
-                SetDialogFrame(null);
             });
+
+            try
+            {
+                if (action != null) await action();
+            }
+            finally
+            {
+                await Application.Current.Dispatcher.InvokeAsync(() => SetDialogFrame(null));
+            }
         }
         public async void LauncherCanNotCloseDialog(Action successAction)
         {

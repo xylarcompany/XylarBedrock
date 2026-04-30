@@ -24,7 +24,9 @@ namespace XylarBedrock
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         private const string MinimumVCRuntimeVersion = "14.14.26405.0";
-        private const string VCRedistDownloadUrl = "https://aka.ms/vc14/vc_redist.x64.exe";
+        private const string VCRedistDownloadUrlX64 = "https://aka.ms/vc14/vc_redist.x64.exe";
+        private const string VCRedistDownloadUrlX86 = "https://aka.ms/vc14/vc_redist.x86.exe";
+        private static int deferredStartupStarted;
 
         [STAThread]
         public static void Main()
@@ -36,13 +38,10 @@ namespace XylarBedrock
             RuntimeHandler.LogStartupInformation();
             RuntimeHandler.ValidateOSArchitecture();
             Trace.WriteLine("Application Starting...");
-            if (/*CheckForWindowsVersion() &&*/ CheckForVCRuntime())
-            {
-                var application = new App();
-                application.Startup += OnApplicationInitalizing;
-                application.InitializeComponent();
-                application.Run();
-            }
+            var application = new App();
+            application.Startup += OnApplicationInitalizing;
+            application.InitializeComponent();
+            application.Run();
         }
 
         private static void ShowStartupNotice()
@@ -66,12 +65,14 @@ namespace XylarBedrock
             await MainViewModel.Default.ShowWaitingDialog(async () =>
             {
                 Trace.WriteLine("Preparing Application...");
-                await RuntimeHandler.InitalizeBugRockOfTheWeek();
-                LanguageManager.Init();
-                MainDataModel.Default.LoadConfig();
-                await MainDataModel.Default.LoadVersions(true);
-                MainDataModel.Default.ProgressBarState.PlayButtonLanguageChanged = !MainDataModel.Default.ProgressBarState.PlayButtonLanguageChanged;
-                if (await MainDataModel.Updater.CheckForUpdatesAsync(true)) MainViewModel.Default.UpdateButton.ShowUpdateButton();
+                SafeRun("Language init", LanguageManager.Init);
+                SafeRun("Load config", MainDataModel.Default.LoadConfig);
+                SafeRun("Play button refresh", () =>
+                {
+                    MainDataModel.Default.ProgressBarState.PlayButtonLanguageChanged =
+                        !MainDataModel.Default.ProgressBarState.PlayButtonLanguageChanged;
+                });
+                await Task.CompletedTask;
                 Trace.WriteLine("Preparing Application: DONE");
             });
         }
@@ -82,24 +83,88 @@ namespace XylarBedrock
             await MainViewModel.Default.ShowWaitingDialog(async () =>
             {
                 Trace.WriteLine("Refreshing Application...");
-                MainDataModel.Default.LoadConfig();
-                await MainDataModel.Default.LoadVersions();
+                SafeRun("Refresh config", MainDataModel.Default.LoadConfig);
+                await SafeRunAsync("Refresh versions", () => MainDataModel.Default.LoadVersions());
                 Trace.WriteLine("Refreshing Application: DONE");
             });
         }
 
-        public static bool CheckForVCRuntime()
+        public static void StartDeferredStartupWork()
         {
+            if (Interlocked.Exchange(ref deferredStartupStarted, 1) == 1)
+            {
+                return;
+            }
+
+            _ = Task.Run(RunDeferredStartupWorkAsync);
+        }
+
+        private static async Task RunDeferredStartupWorkAsync()
+        {
+            await Task.Delay(1200);
+
+            Trace.WriteLine("Starting deferred startup work...");
+            await SafeRunAsync("VC runtime", EnsureVCRuntimeAsync);
+            await SafeRunAsync("Load versions", () => MainDataModel.Default.LoadVersions(true));
+            SafeRun("Play button refresh", () =>
+            {
+                MainDataModel.Default.ProgressBarState.PlayButtonLanguageChanged =
+                    !MainDataModel.Default.ProgressBarState.PlayButtonLanguageChanged;
+            });
+            await SafeRunAsync("Bugrock of the week", RuntimeHandler.InitalizeBugRockOfTheWeek);
+            await SafeRunAsync("Update check", async () =>
+            {
+                if (await MainDataModel.Updater.CheckForUpdatesAsync(true))
+                {
+                    MainViewModel.Default.UpdateButton.ShowUpdateButton();
+                }
+            });
+            Trace.WriteLine("Deferred startup work finished.");
+        }
+
+        private static void SafeRun(string stepName, Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Startup step failed: {stepName}: {ex}");
+            }
+        }
+
+        private static async Task SafeRunAsync(string stepName, Func<Task> action)
+        {
+            try
+            {
+                await action();
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Startup step failed: {stepName}: {ex}");
+            }
+        }
+
+        private static Task EnsureVCRuntimeAsync()
+        {
+            return Task.Run(() => CheckForVCRuntime(false));
+        }
+
+        public static bool CheckForVCRuntime(bool isStartupBlocking = true)
+        {
+            string architecture = GetRequiredVCRuntimeArchitecture();
+            string downloadUrl = GetVCRedistDownloadUrl(architecture);
             Trace.WriteLine("Checking VC Runtime version");
-            if (TryGetInstalledVCRuntimeVersion(out Version installedVersion) &&
+            if (TryGetInstalledVCRuntimeVersion(architecture, out Version installedVersion) &&
                 installedVersion.CompareTo(new Version(MinimumVCRuntimeVersion)) >= 0)
             {
                 Trace.WriteLine("VC++ Runtime OK");
                 return true;
             }
 
-            Trace.WriteLine("VC++ Runtime missing or outdated. Starting official Microsoft installer.");
-            bool installResult = TryInstallVCRuntime();
+            Trace.WriteLine($"VC++ Runtime missing or outdated for {architecture}. Starting official Microsoft installer.");
+            bool installResult = TryInstallVCRuntime(architecture, downloadUrl);
             if (installResult)
             {
                 Trace.WriteLine("VC++ Runtime OK");
@@ -107,11 +172,16 @@ namespace XylarBedrock
             }
 
             string errorMessage =
-                "XylarBedrock needs the Microsoft Visual C++ x64 Runtime to start.\n\n" +
-                "The launcher tried to install the official Microsoft package automatically but it did not complete.\n\n" +
-                $"Please install it manually from:\n{VCRedistDownloadUrl}";
+                $"XylarBedrock could not confirm the Microsoft Visual C++ {architecture} Runtime yet.\n\n" +
+                "The launcher tried to install the official Microsoft package automatically, but it did not complete.\n\n" +
+                $"If a feature needs it later, install it manually from:\n{downloadUrl}";
             Trace.WriteLine(errorMessage);
-            System.Windows.Forms.MessageBox.Show(errorMessage, "Runtime required", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            if (isStartupBlocking)
+            {
+                System.Windows.Forms.MessageBox.Show(errorMessage, "Runtime required", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
             return false;
         }
         public static bool CheckForWindowsVersion()
@@ -140,18 +210,30 @@ namespace XylarBedrock
                 return result;
         }
 
-        private static bool TryInstallVCRuntime()
+        private static string GetRequiredVCRuntimeArchitecture()
+        {
+            return Environment.Is64BitProcess ? "x64" : "x86";
+        }
+
+        private static string GetVCRedistDownloadUrl(string architecture)
+        {
+            return architecture.Equals("x86", StringComparison.OrdinalIgnoreCase)
+                ? VCRedistDownloadUrlX86
+                : VCRedistDownloadUrlX64;
+        }
+
+        private static bool TryInstallVCRuntime(string architecture, string downloadUrl)
         {
             try
             {
                 string workingDirectory = Path.Combine(Path.GetTempPath(), "XylarBedrock");
                 Directory.CreateDirectory(workingDirectory);
 
-                string installerPath = Path.Combine(workingDirectory, "vc_redist.x64.exe");
+                string installerPath = Path.Combine(workingDirectory, $"vc_redist.{architecture}.exe");
                 string logPath = Path.Combine(workingDirectory, "vc_redist_install.log");
 
                 using (HttpClient client = new HttpClient())
-                using (HttpResponseMessage response = client.GetAsync(VCRedistDownloadUrl).GetAwaiter().GetResult())
+                using (HttpResponseMessage response = client.GetAsync(downloadUrl).GetAwaiter().GetResult())
                 {
                     response.EnsureSuccessStatusCode();
                     using Stream downloadStream = response.Content.ReadAsStream();
@@ -176,7 +258,7 @@ namespace XylarBedrock
                     return false;
                 }
 
-                return TryGetInstalledVCRuntimeVersion(out Version installedVersion)
+                return TryGetInstalledVCRuntimeVersion(architecture, out Version installedVersion)
                     && installedVersion.CompareTo(new Version(MinimumVCRuntimeVersion)) >= 0;
             }
             catch (Exception ex)
@@ -186,7 +268,7 @@ namespace XylarBedrock
             }
         }
 
-        private static bool TryGetInstalledVCRuntimeVersion(out Version version)
+        private static bool TryGetInstalledVCRuntimeVersion(string architecture, out Version version)
         {
             version = null;
 
@@ -195,7 +277,7 @@ namespace XylarBedrock
                 try
                 {
                     using RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
-                    using RegistryKey runtimeKey = baseKey.OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64");
+                    using RegistryKey runtimeKey = baseKey.OpenSubKey($@"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\{architecture}");
                     string value = runtimeKey?.GetValue("Version") as string;
                     if (!string.IsNullOrWhiteSpace(value) && Version.TryParse(value.Replace("v", string.Empty), out Version parsedVersion))
                     {

@@ -86,7 +86,7 @@
 		<SelfContained>true</SelfContained>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 		<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
-		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+		<EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
 		<PublishTrimmed>false</PublishTrimmed>
 	</PropertyGroup>
 	<ItemGroup>

@@ -40,10 +40,10 @@ namespace XylarBedrock.Pages
 {
     public partial class MainPage : Page, IDisposable
     {
-        private GameTabs GamePage = new GameTabs();
-        private SettingsTabs settingsScreenPage = new SettingsTabs();
-        private NewsScreenTabs newsScreenPage = new NewsScreenTabs();
-        private AddonsPage addonsPage = new AddonsPage();
+        private GameTabs gamePage;
+        private SettingsTabs settingsScreenPage;
+        private NewsScreenTabs newsScreenPage;
+        private AddonsPage addonsPage;
 
         private Navigator Navigator { get; set; } = new Navigator(true);
 
@@ -51,7 +51,6 @@ namespace XylarBedrock.Pages
         {
             this.DataContext = MainDataModel.Default;
             InitializeComponent();
-            addonsPage.WarmUpCatalog();
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -108,7 +107,8 @@ namespace XylarBedrock.Pages
             {
                 Navigator.UpdatePageIndex(0);
                 NewsButton.Button.IsChecked = true;
-                Task.Run(() => Navigator.Navigate(MainWindowFrame, newsScreenPage));
+                NewsScreenTabs page = GetNewsPage();
+                Task.Run(() => Navigator.Navigate(MainWindowFrame, page));
             });
 
         }
@@ -118,7 +118,8 @@ namespace XylarBedrock.Pages
             {
                 Navigator.UpdatePageIndex(1);
                 BedrockEditionButton.Button.IsChecked = true;
-                Task.Run(() => Navigator.Navigate(MainWindowFrame, GamePage));
+                GameTabs page = GetGamePage();
+                Task.Run(() => Navigator.Navigate(MainWindowFrame, page));
             });
 
         }
@@ -129,7 +130,8 @@ namespace XylarBedrock.Pages
             {
                 Navigator.UpdatePageIndex(2);
                 AddonsButton.Button.IsChecked = true;
-                Task.Run(() => Navigator.Navigate(MainWindowFrame, addonsPage));
+                AddonsPage page = GetAddonsPage();
+                Task.Run(() => Navigator.Navigate(MainWindowFrame, page));
             });
 
         }
@@ -140,7 +142,8 @@ namespace XylarBedrock.Pages
             {
                 Navigator.UpdatePageIndex(4);
                 SettingsButton.Button.IsChecked = true;
-                Task.Run(() => Navigator.Navigate(MainWindowFrame, settingsScreenPage));
+                SettingsTabs page = GetSettingsPage();
+                Task.Run(() => Navigator.Navigate(MainWindowFrame, page));
             });
 
         }
@@ -174,6 +177,30 @@ namespace XylarBedrock.Pages
         protected virtual void Dispose(bool disposing)
         {
 
+        }
+
+        private GameTabs GetGamePage()
+        {
+            gamePage ??= new GameTabs();
+            return gamePage;
+        }
+
+        private SettingsTabs GetSettingsPage()
+        {
+            settingsScreenPage ??= new SettingsTabs();
+            return settingsScreenPage;
+        }
+
+        private NewsScreenTabs GetNewsPage()
+        {
+            newsScreenPage ??= new NewsScreenTabs();
+            return newsScreenPage;
+        }
+
+        private AddonsPage GetAddonsPage()
+        {
+            addonsPage ??= new AddonsPage();
+            return addonsPage;
         }
 
     }
