@@ -153,28 +153,46 @@ namespace XylarBedrock
 
         public static bool CheckForVCRuntime(bool isStartupBlocking = true)
         {
-            string architecture = GetRequiredVCRuntimeArchitecture();
-            string downloadUrl = GetVCRedistDownloadUrl(architecture);
             Trace.WriteLine("Checking VC Runtime version");
-            if (TryGetInstalledVCRuntimeVersion(architecture, out Version installedVersion) &&
-                installedVersion.CompareTo(new Version(MinimumVCRuntimeVersion)) >= 0)
+
+            string[] requiredArchitectures = GetRequiredVCRuntimeArchitectures().ToArray();
+            List<string> missingArchitectures = new List<string>();
+
+            foreach (string architecture in requiredArchitectures)
             {
-                Trace.WriteLine("VC++ Runtime OK");
+                if (TryGetInstalledVCRuntimeVersion(architecture, out Version installedVersion) &&
+                    installedVersion.CompareTo(new Version(MinimumVCRuntimeVersion)) >= 0)
+                {
+                    Trace.WriteLine($"VC++ Runtime OK for {architecture}");
+                    continue;
+                }
+
+                string downloadUrl = GetVCRedistDownloadUrl(architecture);
+                Trace.WriteLine($"VC++ Runtime missing or outdated for {architecture}. Starting official Microsoft installer.");
+                bool installResult = TryInstallVCRuntime(architecture, downloadUrl);
+                if (installResult)
+                {
+                    Trace.WriteLine($"VC++ Runtime OK for {architecture}");
+                    continue;
+                }
+
+                missingArchitectures.Add(architecture);
+            }
+
+            if (missingArchitectures.Count == 0)
+            {
                 return true;
             }
 
-            Trace.WriteLine($"VC++ Runtime missing or outdated for {architecture}. Starting official Microsoft installer.");
-            bool installResult = TryInstallVCRuntime(architecture, downloadUrl);
-            if (installResult)
-            {
-                Trace.WriteLine("VC++ Runtime OK");
-                return true;
-            }
+            string missingArchitecturesText = string.Join(" and ", missingArchitectures);
+            string manualLinks = string.Join(
+                Environment.NewLine,
+                missingArchitectures.Select(architecture => $"{architecture}: {GetVCRedistDownloadUrl(architecture)}"));
 
             string errorMessage =
-                $"XylarBedrock could not confirm the Microsoft Visual C++ {architecture} Runtime yet.\n\n" +
+                $"XylarBedrock could not confirm the Microsoft Visual C++ Runtime for {missingArchitecturesText} yet.\n\n" +
                 "The launcher tried to install the official Microsoft package automatically, but it did not complete.\n\n" +
-                $"If a feature needs it later, install it manually from:\n{downloadUrl}";
+                $"If Minecraft still does not open, install it manually from:\n{manualLinks}";
             Trace.WriteLine(errorMessage);
 
             if (isStartupBlocking)
@@ -210,9 +228,32 @@ namespace XylarBedrock
                 return result;
         }
 
-        private static string GetRequiredVCRuntimeArchitecture()
+        private static IEnumerable<string> GetRequiredVCRuntimeArchitectures()
         {
-            return Environment.Is64BitProcess ? "x64" : "x86";
+            HashSet<string> architectures = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (!Environment.Is64BitProcess)
+            {
+                architectures.Add("x86");
+            }
+
+            switch (RuntimeInformation.OSArchitecture)
+            {
+                case Architecture.X64:
+                case Architecture.Arm64:
+                    architectures.Add("x64");
+                    break;
+                case Architecture.X86:
+                    architectures.Add("x86");
+                    break;
+            }
+
+            if (architectures.Count == 0)
+            {
+                architectures.Add("x64");
+            }
+
+            return architectures;
         }
 
         private static string GetVCRedistDownloadUrl(string architecture)
@@ -245,7 +286,8 @@ namespace XylarBedrock
                 {
                     FileName = installerPath,
                     Arguments = $"/install /passive /norestart /log \"{logPath}\"",
-                    UseShellExecute = true
+                    UseShellExecute = true,
+                    Verb = "runas"
                 };
 
                 using Process installer = Process.Start(installerInfo);
