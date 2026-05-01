@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -29,11 +28,6 @@ namespace XylarBedrock.Pages.Settings
 
         }
 
-        private void Page_Loaded(object sender, RoutedEventArgs e)
-        {
-            RefreshSupportDiagnostics();
-        }
-
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
 
@@ -58,25 +52,6 @@ namespace XylarBedrock.Pages.Settings
         {
             MainDataModel.Updater.UpdateButton_Click(sender, e);
         }
-
-        private void RefreshSupportDiagnostics()
-        {
-            var diagnostics = MainDataModel.Default.PackageManager.GetSupportDiagnostics();
-
-            DiagnosticsStoreStatusText.Text = diagnostics.OfficialStoreReleaseDetected ? "Detected" : "Not detected";
-            DiagnosticsDllStatusText.Text = diagnostics.BundledDllPack.StatusText;
-            DiagnosticsLastLaunchText.Text = diagnostics.LastLaunchMethodAttempted;
-            DiagnosticsStorePathsText.Text = JoinPaths(diagnostics.OfficialStoreReleaseDirectories);
-            DiagnosticsPreviewPathsText.Text = JoinPaths(diagnostics.PreviewOrLocalDirectories);
-        }
-
-        private static string JoinPaths(System.Collections.Generic.IReadOnlyList<string> paths)
-        {
-            return paths != null && paths.Any()
-                ? string.Join(Environment.NewLine, paths)
-                : "None detected.";
-        }
-
     }
 }
 

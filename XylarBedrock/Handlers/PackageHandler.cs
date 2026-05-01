@@ -57,6 +57,15 @@ namespace XylarBedrock.Handlers
         {
             try
             {
+                if (v == null)
+                {
+                    ShowLauncherMessage(
+                        App.DisplayName,
+                        "No Minecraft installation is currently selected. Pick one, then press Play again.",
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
                 StartTask();
                 MainDataModel.Default.ProgressBarState.SetProgressBarState(LauncherState.isLaunching);
                 bool launchRequested = await TryLaunchMinecraftAsync(v.Type, LaunchEditor);
@@ -212,7 +221,7 @@ namespace XylarBedrock.Handlers
 
         public string GetBundledDllDirectoryPath()
         {
-            return Path.Combine(MainDataModel.Default.FilePaths.ExecutableDirectory, Constants.BUNDLED_MODS_DIRECTORY_NAME);
+            return Path.Combine(MainDataModel.Default.FilePaths.ExecutableDirectory, "dll");
         }
 
         public string GetBundledModSourcePath()
@@ -328,20 +337,9 @@ namespace XylarBedrock.Handlers
                     Directory.CreateDirectory(minecraftFolder);
                     File.Copy(extraDllSourcePath, extraDllDestPath, true);
                 }
-            });
 
-            bool runtimeReady = Program.CheckForVCRuntime(false);
-            if (!runtimeReady)
-            {
-                Trace.WriteLine("The bundled mod was copied, but the Microsoft VC++ runtime could not be confirmed yet.");
-                if (showMessage)
-                {
-                    ShowLauncherMessage(
-                        App.DisplayName,
-                        "XylarBedrock.dll was copied into your mods folder, but the Microsoft Visual C++ Runtime could not be confirmed yet.\n\nReopen the launcher once and let it finish the official runtime setup if Minecraft still does not open.",
-                        MessageBoxImage.Warning);
-                }
-            }
+                CopyDllsToXboxGames();
+            });
 
             bool installed = IsBundledModInstalled();
             string currentMinecraftVersion = GetOfficialStorePackageVersionString();
@@ -366,7 +364,6 @@ namespace XylarBedrock.Handlers
 
             return installed;
         }
-
 
         public async Task InstallPackage(MCVersion v, string dirPath)
         {
@@ -409,6 +406,7 @@ namespace XylarBedrock.Handlers
                 EndTask();
             }
         }
+
         public async Task ClosePackage()
         {
             if (GameHandle != null)
@@ -420,6 +418,7 @@ namespace XylarBedrock.Handlers
                 if (result == System.Windows.Forms.DialogResult.Yes) GameHandle.Kill();
             }
         }
+
         public async Task RemovePackage(MCVersion v)
         {
             try
@@ -448,6 +447,7 @@ namespace XylarBedrock.Handlers
                 EndTask();
             }
         }
+
         public async Task AddPackage(string packagePath)
         {
             try
@@ -456,16 +456,20 @@ namespace XylarBedrock.Handlers
                 StartTask();
                 var outputDirectoryName = FileExtensions.GetAvaliableFileName(Path.GetFileNameWithoutExtension(packagePath), MainDataModel.Default.FilePaths.VersionsFolder);
                 var outputDirectoryPath = Path.Combine(MainDataModel.Default.FilePaths.VersionsFolder, outputDirectoryName);
+                var appxBackupsPath = Path.Combine(MainDataModel.Default.FilePaths.VersionsFolder, "AppxBackups");
+                var backupFilePath = Path.Combine(appxBackupsPath, Path.GetFileName(packagePath));
                 Trace.WriteLine("Extraction started");
                 MainDataModel.Default.ProgressBarState.SetProgressBarState(LauncherState.isExtracting);
                 if (Directory.Exists(outputDirectoryPath)) Directory.Delete(outputDirectoryPath, true);
-                var fileStream = File.OpenRead(packagePath);
+                Directory.CreateDirectory(appxBackupsPath);
+                using var fileStream = File.OpenRead(packagePath);
                 var progress = new Progress<ZipProgress>();
                 progress.ProgressChanged += (s, z) => MainDataModel.Default.ProgressBarState.SetProgressBarProgress(currentProgress: z.Processed, totalProgress: z.Total);
                 await Task.Run(() => new ZipArchive(fileStream).ExtractToDirectory(outputDirectoryPath, progress, CancelSource));
-                fileStream.Close();
-                File.Delete(Path.Combine(outputDirectoryPath, "AppxSignature.p7x"));
-                File.Move(packagePath, Path.Combine(MainDataModel.Default.FilePaths.VersionsFolder, "AppxBackups", packagePath));
+                string appxSignaturePath = Path.Combine(outputDirectoryPath, "AppxSignature.p7x");
+                if (File.Exists(appxSignaturePath)) File.Delete(appxSignaturePath);
+                if (File.Exists(backupFilePath)) File.Delete(backupFilePath);
+                File.Move(packagePath, backupFilePath);
                 Trace.WriteLine("Extracted successfully");
                 await Task.Run(Program.OnApplicationRefresh);
                 foreach (var ver in MainDataModel.Default.Versions) ver.UpdateFolderSize();
@@ -483,6 +487,7 @@ namespace XylarBedrock.Handlers
                 EndTask();
             }
         }
+
         public async Task DownloadPackage(MCVersion v)
         {
             try
@@ -503,6 +508,7 @@ namespace XylarBedrock.Handlers
                 EndTask();
             }
         }
+
         public void Cancel()
         {
             if (CancelSource != null && !CancelSource.IsCancellationRequested) CancelSource.Cancel();
@@ -662,7 +668,6 @@ namespace XylarBedrock.Handlers
                         GameHandle.EnableRaisingEvents = true;
                         GameHandle.Exited += OnPackageExit;
 
-
                         void OnPackageExit(object sender, EventArgs e)
                         {
                             Process p = sender as Process;
@@ -691,7 +696,6 @@ namespace XylarBedrock.Handlers
                     MainDataModel.Default.ProgressBarState.SetGameRunningStatus(false);
                 }
             });
-
         }
 
         private IEnumerable<Package> GetInstalledMinecraftPackages(VersionType type)
@@ -1002,8 +1006,6 @@ namespace XylarBedrock.Handlers
 
         private async Task DownloadAndExtractPackage(MCVersion v)
         {
-            //MCVersion debugGDKVersion = new MCVersion("", "", "1.21.120", VersionType.Release, "x64");
-
             try
             {
                 Trace.WriteLine($"Download start: {v.PackageID}");
@@ -1027,7 +1029,7 @@ namespace XylarBedrock.Handlers
             catch (PackageManagerException e)
             {
                 ResetTask();
-                throw e;
+                throw;
             }
             catch (Exception ex)
             {
@@ -1040,8 +1042,8 @@ namespace XylarBedrock.Handlers
                 SetCancelation(false);
                 CancelSource = null;
             }
-
         }
+
         private async Task DownloadPackage(MCVersion v, string dlPath, CancellationTokenSource cancelSource)
         {
             try
@@ -1055,7 +1057,7 @@ namespace XylarBedrock.Handlers
             catch (PackageManagerException e)
             {
                 ResetTask();
-                throw e;
+                throw;
             }
             catch (TaskCanceledException e)
             {
@@ -1072,6 +1074,7 @@ namespace XylarBedrock.Handlers
                 ResetTask();
             }
         }
+
         private async Task RegisterPackage(MCVersion v)
         {
             try
@@ -1085,7 +1088,7 @@ namespace XylarBedrock.Handlers
             catch (PackageManagerException e)
             {
                 ResetTask();
-                throw e;
+                throw;
             }
             catch (Exception e)
             {
@@ -1096,8 +1099,8 @@ namespace XylarBedrock.Handlers
             {
                 ResetTask();
             }
-
         }
+
         private async Task ExtractPackage(MCVersion v, string dlPath, string bkpsPath, string pkgPath, CancellationTokenSource cancelSource)
         {
             try
@@ -1118,7 +1121,8 @@ namespace XylarBedrock.Handlers
                 });
 
                 await File.WriteAllTextAsync(v.IdentificationPath, v.PackageID);
-                File.Delete(Path.Combine(v.GameDirectory, "AppxSignature.p7x"));
+                string appxSignaturePath = Path.Combine(v.GameDirectory, "AppxSignature.p7x");
+                if (File.Exists(appxSignaturePath)) File.Delete(appxSignaturePath);
 
                 if (!File.Exists(bkpsPath))
                 {
@@ -1133,7 +1137,7 @@ namespace XylarBedrock.Handlers
             catch (PackageManagerException e)
             {
                 ResetTask();
-                throw e;
+                throw;
             }
             catch (TaskCanceledException e)
             {
@@ -1152,6 +1156,7 @@ namespace XylarBedrock.Handlers
                 ResetTask();
             }
         }
+
         private async Task UnregisterPackage(MCVersion v, bool keepVersion = false, bool mustMatchVersion = false)
         {
             try
@@ -1182,7 +1187,7 @@ namespace XylarBedrock.Handlers
             catch (PackageManagerException e)
             {
                 ResetTask();
-                throw e;
+                throw;
             }
             catch (Exception ex)
             {
@@ -1194,6 +1199,7 @@ namespace XylarBedrock.Handlers
                 ResetTask();
             }
         }
+
         private async Task RedirectSaveData(string InstallationsFolderPath, VersionType type)
         {
             await Task.Run(() =>
@@ -1247,7 +1253,6 @@ namespace XylarBedrock.Handlers
                     pkgDir.SetAccessControl(pkgSecurity);
 
                     var profileSecurity = profileDir.GetAccessControl();
-                    //profileSecurity.SetOwner(owner);
                     profileSecurity.AddAccessRule(au_access_rules);
                     profileSecurity.AddAccessRule(owner_access_rules);
                     needed_rules.ForEach(x => profileSecurity.AddAccessRule(x));
@@ -1255,15 +1260,15 @@ namespace XylarBedrock.Handlers
                 }
                 catch (PackageManagerException e)
                 {
-                    throw e;
+                    throw;
                 }
                 catch (Exception e)
                 {
                     throw new SaveRedirectionFailedException(e);
                 }
             });
-
         }
+
         private async Task AuthenticateBetaUser()
         {
             try
@@ -1274,11 +1279,11 @@ namespace XylarBedrock.Handlers
             }
             catch (PackageManagerException e)
             {
-                throw e;
+                throw;
             }
             catch (Exception e)
             {
-                System.Diagnostics.Trace.WriteLine("Error while Authenticating UserToken for Version Fetching:\n" + e); //TODO: Localize Error Message
+                System.Diagnostics.Trace.WriteLine("Error while Authenticating UserToken for Version Fetching:\n" + e);
                 throw new BetaAuthenticationFailedException(e);
             }
         }
@@ -1324,6 +1329,7 @@ namespace XylarBedrock.Handlers
                 return false;
             }
         }
+
         #endregion
 
         #region Helpers
@@ -1349,17 +1355,20 @@ namespace XylarBedrock.Handlers
             };
             await src.Task;
         }
+
         protected void ProgressWrapper(long current, long total, string text = null)
         {
             MainDataModel.Default.ProgressBarState.SetProgressBarProgress(current, total);
             MainDataModel.Default.ProgressBarState.SetProgressBarText(text);
         }
+
         protected void ResetTask()
         {
             MainDataModel.Default.ProgressBarState.ResetProgressBarProgress();
             MainDataModel.Default.ProgressBarState.SetProgressBarText();
             MainDataModel.Default.ProgressBarState.SetProgressBarState(LauncherState.None);
         }
+
         protected void EndTask()
         {
             MainDataModel.Default.ProgressBarState.ResetProgressBarProgress();
@@ -1367,18 +1376,20 @@ namespace XylarBedrock.Handlers
             MainDataModel.Default.ProgressBarState.SetProgressBarState(LauncherState.None);
             MainDataModel.Default.ProgressBarState.SetProgressBarVisibility(false);
         }
+
         protected void StartTask()
         {
             MainDataModel.Default.ProgressBarState.SetProgressBarState(LauncherState.isInitializing);
             MainDataModel.Default.ProgressBarState.SetProgressBarVisibility(true);
-
         }
+
         protected void SetCancelation(bool cancelState)
         {
             if (cancelState) CancelSource = new CancellationTokenSource();
             MainDataModel.Default.ProgressBarState.AllowCancel = cancelState ? true : false;
             MainDataModel.Default.ProgressBarState.CancelCommand = cancelState ? new RelayCommand((o) => Cancel()) : null;
         }
+
         protected void SetException(Exception e)
         {
             if (e.GetType() == typeof(PackageExtractionFailedException)) SetError(e, "Extraction failed", "Error_AppExtractionFailed_Title", "Error_AppExtractionFailed");
@@ -1389,13 +1400,10 @@ namespace XylarBedrock.Handlers
             else if (e.GetType() == typeof(PackageRemovalFailedException)) SetError(e, "App uninstall failed", "Error_AppUninstallFailed_Title", "Error_AppUninstallFailed");
             else if (e.GetType() == typeof(SaveRedirectionFailedException)) SetError(e, "Save redirection failed", "Error_SaveDirectoryRedirectionFailed_Title", "Error_SaveDirectoryRedirectionFailed");
             else if (e.GetType() == typeof(PackageDeregistrationFailedException)) SetError(e, "App deregisteration failed", "Error_AppDeregisteringFailed_Title", "Error_AppDeregisteringFailed");
-
             else if (e.GetType() == typeof(PackageDownloadAndExtractFailedException)) SetGenericError(e);
             else if (e.GetType() == typeof(PackageProcessHookFailedException)) SetGenericError(e);
-
             else if (e.GetType() == typeof(PackageExtractionCanceledException)) CancelAction();
             else if (e.GetType() == typeof(PackageDownloadCanceledException)) CancelAction();
-
             else SetGenericError(e);
 
             void CancelAction()
@@ -1423,6 +1431,43 @@ namespace XylarBedrock.Handlers
             return Convert.ToHexString(hash);
         }
 
+        private void CopyDllsToXboxGames()
+        {
+            try
+            {
+                string xboxGamesContentPath = @"C:\XboxGames\Minecraft for Windows\Content";
+                string bundledDllDir = GetBundledDllDirectoryPath();
+                string modDllPath = GetBundledModSourcePath();
+                string runtimeDllPath = GetBundledExtraDllSourcePath();
+
+                if (!Directory.Exists(bundledDllDir))
+                {
+                    Trace.WriteLine($"Bundled DLL directory not found: {bundledDllDir}");
+                    return;
+                }
+
+                if (!Directory.Exists(xboxGamesContentPath))
+                {
+                    Trace.WriteLine($"Xbox Games Content directory not found: {xboxGamesContentPath}");
+                    return;
+                }
+
+                foreach (string dllFile in new[] { modDllPath, runtimeDllPath }.Where(File.Exists))
+                {
+                    string fileName = Path.GetFileName(dllFile);
+                    string destPath = Path.Combine(xboxGamesContentPath, fileName);
+                    File.Copy(dllFile, destPath, true);
+                    Trace.WriteLine($"Copied DLL to Xbox Games: {fileName}");
+                }
+
+                Trace.WriteLine("DLLs successfully copied to Xbox Games Content directory");
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Error copying DLLs to Xbox Games: {ex.Message}");
+            }
+        }
+
         #endregion
 
         #region IDisposable Implementation
@@ -1432,18 +1477,12 @@ namespace XylarBedrock.Handlers
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
         protected virtual void Dispose(bool disposing)
         {
             CancelSource?.Dispose();
         }
 
         #endregion
-
-
-
-
-
-
-
     }
 }
