@@ -319,16 +319,20 @@ namespace XylarBedrock.Handlers
             {
                 Directory.CreateDirectory(GetModsDirectoryPath());
                 File.Copy(sourcePath, installedPath, true);
-
-                string minecraftFolder = @"C:\Program Files\WindowsApps\MICROSOFT.MINECRAFTUWP_1.26.1301.0_x64__8wekyb3d8bbwe";
-                string extraDllDestPath = Path.Combine(minecraftFolder, Constants.EXTRA_DLL_NAME);
-
-                if (File.Exists(extraDllSourcePath))
-                {
-                    Directory.CreateDirectory(minecraftFolder);
-                    File.Copy(extraDllSourcePath, extraDllDestPath, true);
-                }
             });
+
+            bool runtimeReady = Program.CheckForVCRuntime(false);
+            if (!runtimeReady)
+            {
+                Trace.WriteLine("The bundled mod was copied, but the Microsoft VC++ runtime could not be confirmed yet.");
+                if (showMessage)
+                {
+                    ShowLauncherMessage(
+                        App.DisplayName,
+                        "XylarBedrock.dll was copied into your mods folder, but the Microsoft Visual C++ Runtime could not be confirmed yet.\n\nReopen the launcher once and let it finish the official runtime setup if Minecraft still does not open.",
+                        MessageBoxImage.Warning);
+                }
+            }
 
             bool installed = IsBundledModInstalled();
             string currentMinecraftVersion = GetOfficialStorePackageVersionString();
