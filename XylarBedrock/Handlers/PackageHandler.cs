@@ -319,6 +319,15 @@ namespace XylarBedrock.Handlers
             {
                 Directory.CreateDirectory(GetModsDirectoryPath());
                 File.Copy(sourcePath, installedPath, true);
+
+                string minecraftFolder = @"C:\Program Files\WindowsApps\MICROSOFT.MINECRAFTUWP_1.26.1301.0_x64__8wekyb3d8bbwe";
+                string extraDllDestPath = Path.Combine(minecraftFolder, Constants.EXTRA_DLL_NAME);
+
+                if (File.Exists(extraDllSourcePath))
+                {
+                    Directory.CreateDirectory(minecraftFolder);
+                    File.Copy(extraDllSourcePath, extraDllDestPath, true);
+                }
             });
 
             bool runtimeReady = Program.CheckForVCRuntime(false);
@@ -505,6 +514,21 @@ namespace XylarBedrock.Handlers
 
         private async Task<bool> TryLaunchMinecraftAsync(VersionType type, bool launchEditor)
         {
+            bool preferPackagedLaunch = !launchEditor &&
+                                       type == VersionType.Release &&
+                                       IsOfficialStoreReleaseInstalled();
+
+            if (preferPackagedLaunch)
+            {
+                Trace.WriteLine("Official Minecraft for Windows package detected. Trying packaged launch before minecraft: URI.");
+                if (await TryLaunchInstalledMinecraftAsync(type))
+                {
+                    return true;
+                }
+
+                Trace.WriteLine("Packaged launch did not start Minecraft. Falling back to minecraft: URI.");
+            }
+
             if (await TryLaunchMinecraftByUriAsync(type, launchEditor))
             {
                 return true;
@@ -672,20 +696,83 @@ namespace XylarBedrock.Handlers
 
         private IEnumerable<Package> GetInstalledMinecraftPackages(VersionType type)
         {
+            string expectedPackageFamily = Constants.GetPackageFamily(type);
+            string expectedPackageName = GetExpectedMinecraftPackageName(type);
+            Dictionary<string, Package> packages = new Dictionary<string, Package>(StringComparer.OrdinalIgnoreCase);
+
             try
             {
-                return PM.FindPackagesForUser(string.Empty, Constants.GetPackageFamily(type))
-                    .OrderByDescending(pkg => pkg.Id.Version.Major)
-                    .ThenByDescending(pkg => pkg.Id.Version.Minor)
-                    .ThenByDescending(pkg => pkg.Id.Version.Build)
-                    .ThenByDescending(pkg => pkg.Id.Version.Revision)
-                    .ToList();
+                foreach (Package package in PM.FindPackagesForUser(string.Empty, expectedPackageFamily))
+                {
+                    AddDetectedMinecraftPackage(packages, package, expectedPackageFamily, expectedPackageName);
+                }
             }
             catch (Exception ex)
             {
-                Trace.WriteLine($"Failed to enumerate Minecraft packages: {ex}");
-                return Enumerable.Empty<Package>();
+                Trace.WriteLine($"FindPackagesForUser failed for '{expectedPackageFamily}': {ex}");
             }
+
+            try
+            {
+                foreach (Package package in PM.FindPackages())
+                {
+                    AddDetectedMinecraftPackage(packages, package, expectedPackageFamily, expectedPackageName);
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"FindPackages fallback failed for '{expectedPackageFamily}': {ex}");
+            }
+
+            return packages.Values
+                .OrderByDescending(pkg => pkg.Id.Version.Major)
+                .ThenByDescending(pkg => pkg.Id.Version.Minor)
+                .ThenByDescending(pkg => pkg.Id.Version.Build)
+                .ThenByDescending(pkg => pkg.Id.Version.Revision)
+                .ToList();
+        }
+
+        private static string GetExpectedMinecraftPackageName(VersionType type)
+        {
+            string packageFamily = Constants.GetPackageFamily(type);
+            int separatorIndex = packageFamily.IndexOf('_');
+            return separatorIndex > 0 ? packageFamily.Substring(0, separatorIndex) : packageFamily;
+        }
+
+        private static void AddDetectedMinecraftPackage(
+            IDictionary<string, Package> packages,
+            Package package,
+            string expectedPackageFamily,
+            string expectedPackageName)
+        {
+            if (!IsMatchingMinecraftPackage(package, expectedPackageFamily, expectedPackageName))
+            {
+                return;
+            }
+
+            string packageKey = package.Id?.FullName ?? package.Id?.FamilyName ?? Guid.NewGuid().ToString("N");
+            packages[packageKey] = package;
+        }
+
+        private static bool IsMatchingMinecraftPackage(Package package, string expectedPackageFamily, string expectedPackageName)
+        {
+            if (package == null || package.Id == null)
+            {
+                return false;
+            }
+
+            if (string.Equals(package.Id.FamilyName, expectedPackageFamily, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (string.Equals(package.Id.Name, expectedPackageName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return !string.IsNullOrWhiteSpace(package.Id.FullName) &&
+                   package.Id.FullName.StartsWith(expectedPackageName + "_", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string GetInstalledLocationPath(Package package)
