@@ -145,13 +145,42 @@ namespace XylarBedrock.Classes
         {
             foreach(var profile in profiles) profile.Value.UUID = profile.Key;
 
-            if (profiles.ContainsKey(Properties.LauncherSettings.Default.CurrentProfileUUID)) Properties.LauncherSettings.Default.CurrentProfileUUID = lastProfile;
-            else if (profiles.Count != 0) Properties.LauncherSettings.Default.CurrentProfileUUID = profiles.First().Key;
+            EnsureDefaultProfileExists();
+
+            string savedProfileUuid = Properties.LauncherSettings.Default.CurrentProfileUUID;
+            if (!string.IsNullOrWhiteSpace(lastProfile) && profiles.ContainsKey(lastProfile))
+            {
+                Properties.LauncherSettings.Default.CurrentProfileUUID = lastProfile;
+            }
+            else if (!string.IsNullOrWhiteSpace(savedProfileUuid) && profiles.ContainsKey(savedProfileUuid))
+            {
+                Properties.LauncherSettings.Default.CurrentProfileUUID = savedProfileUuid;
+            }
+            else if (profiles.Count != 0)
+            {
+                Properties.LauncherSettings.Default.CurrentProfileUUID = profiles.First().Key;
+            }
 
             if (CurrentProfile != null)
             {
-                if (CurrentInstallations.Any(x => x.InstallationUUID == lastInstallation)) CurrentInstallationUUID = lastInstallation;
-                else if (CurrentInstallations.Count != 0) CurrentInstallationUUID = CurrentInstallations.First().InstallationUUID;
+                string savedInstallationUuid = Properties.LauncherSettings.Default.CurrentInstallationUUID;
+
+                if (!string.IsNullOrWhiteSpace(lastInstallation) && CurrentInstallations.Any(x => x.InstallationUUID == lastInstallation))
+                {
+                    CurrentInstallationUUID = lastInstallation;
+                }
+                else if (!string.IsNullOrWhiteSpace(savedInstallationUuid) && CurrentInstallations.Any(x => x.InstallationUUID == savedInstallationUuid))
+                {
+                    CurrentInstallationUUID = savedInstallationUuid;
+                }
+                else if (CurrentInstallations.Any(x => x.InstallationUUID == Constants.LATEST_RELEASE_UUID))
+                {
+                    CurrentInstallationUUID = Constants.LATEST_RELEASE_UUID;
+                }
+                else if (CurrentInstallations.Count != 0)
+                {
+                    CurrentInstallationUUID = CurrentInstallations.First().InstallationUUID;
+                }
             }
         }
         public void Save(string filePath)
@@ -165,6 +194,8 @@ namespace XylarBedrock.Classes
         }
         public void Validate()
         {
+            EnsureDefaultProfileExists();
+
             foreach (var profile in profiles.Values)
             {
                 profile.Installations ??= new ObservableCollection<BLInstallation>();
@@ -183,6 +214,22 @@ namespace XylarBedrock.Classes
             Properties.LauncherSettings.Default.CurrentInstallationUUID = Constants.LATEST_RELEASE_UUID;
             Properties.LauncherSettings.Default.Save();
             Save();
+        }
+
+        private void EnsureDefaultProfileExists()
+        {
+            if (profiles.Count != 0) return;
+
+            const string defaultProfileUuid = "default_profile";
+            profiles[defaultProfileUuid] = CreateDefaultProfile(defaultProfileUuid);
+        }
+
+        private static BLProfile CreateDefaultProfile(string uuid)
+        {
+            return new BLProfile("Default Profile", "Default Profile", uuid)
+            {
+                Installations = new ObservableCollection<BLInstallation>()
+            };
         }
 
         private static BLInstallation CreateOfficialInstallation(DateTime lastPlayed = default)
