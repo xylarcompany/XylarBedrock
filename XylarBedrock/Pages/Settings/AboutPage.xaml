@@ -9,6 +9,7 @@
       d:DesignWidth="820"
       Title="AboutPage"
       Initialized="Page_Initialized"
+      Loaded="Page_Loaded"
       MinWidth="728"
       MinHeight="525"
       Background="{DynamicResource Background.Tertiary}">
@@ -167,6 +168,82 @@
                                 Style="{DynamicResource DialogButton}"
                                 Height="32"
                                 VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource SectionBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="270"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Margin="0,0,18,0">
+                            <TextBlock Text="Support Diagnostics"
+                                       Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Margin="0,8,0,0"
+                                       Text="These paths help support quickly check whether the official Store release and the DLL pack were found where the launcher expects them."
+                                       Style="{StaticResource SectionText}"/>
+                        </StackPanel>
+
+                        <Grid Grid.Column="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="190"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Store release"
+                                       Style="{StaticResource SectionText}"
+                                       FontWeight="Bold"/>
+                            <TextBlock Grid.Column="1"
+                                       x:Name="DiagnosticsStoreStatusText"
+                                       Style="{StaticResource SectionText}"/>
+
+                            <TextBlock Grid.Row="1"
+                                       Text="DLL pack"
+                                       Style="{StaticResource SectionText}"
+                                       FontWeight="Bold"/>
+                            <TextBlock Grid.Row="1"
+                                       Grid.Column="1"
+                                       x:Name="DiagnosticsDllStatusText"
+                                       Style="{StaticResource SectionText}"/>
+
+                            <TextBlock Grid.Row="2"
+                                       Text="Last launch method"
+                                       Style="{StaticResource SectionText}"
+                                       FontWeight="Bold"/>
+                            <TextBlock Grid.Row="2"
+                                       Grid.Column="1"
+                                       x:Name="DiagnosticsLastLaunchText"
+                                       Style="{StaticResource SectionText}"/>
+
+                            <TextBlock Grid.Row="3"
+                                       Text="Store path(s)"
+                                       Style="{StaticResource SectionText}"
+                                       FontWeight="Bold"/>
+                            <TextBlock Grid.Row="3"
+                                       Grid.Column="1"
+                                       x:Name="DiagnosticsStorePathsText"
+                                       Style="{StaticResource SectionText}"
+                                       FontFamily="Consolas"/>
+
+                            <TextBlock Grid.Row="4"
+                                       Text="Preview / local path(s)"
+                                       Style="{StaticResource SectionText}"
+                                       FontWeight="Bold"/>
+                            <TextBlock Grid.Row="4"
+                                       Grid.Column="1"
+                                       x:Name="DiagnosticsPreviewPathsText"
+                                       Style="{StaticResource SectionText}"
+                                       FontFamily="Consolas"/>
+                        </Grid>
                     </Grid>
                 </Border>
 

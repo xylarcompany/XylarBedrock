@@ -134,7 +134,6 @@
                                            HorizontalAlignment="Left" Margin="4,4,0,4" 
                                            VerticalAlignment="Top" Width="250" Height="50"
                                            IsSynchronizedWithCurrentItem="True"
-                                           SelectedItem=""
                                            SelectedValue="{Binding Source={x:Static viewModels:MainDataModel.Default}, Path=Config.CurrentInstallationUUID, UpdateSourceTrigger=PropertyChanged}"
                                            SelectedValuePath="InstallationUUID"   
                                            Padding="-1,7,5,3">

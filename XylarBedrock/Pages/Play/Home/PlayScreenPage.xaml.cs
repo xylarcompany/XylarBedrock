@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using XylarBedrock.Classes.Launcher;
 
 namespace XylarBedrock.Pages.Play.Home
 {
@@ -66,34 +67,38 @@ namespace XylarBedrock.Pages.Play.Home
 
         private void CheckVersionAvailability(object _, EventArgs __)
         {
-            BLInstallation selectedInstallation = InstallationsList.SelectedItem as BLInstallation;
+            BLInstallation selectedInstallation = ResolveSelectedInstallation();
             bool isOfficialStoreInstalled = MainDataModel.Default.PackageManager.IsOfficialStoreReleaseInstalled();
-            bool hasBundledDllPack = MainDataModel.Default.PackageManager.HasBundledModSource();
+            BundledDllPackDiagnostics bundledDllPack = MainDataModel.Default.PackageManager.GetBundledDllPackDiagnostics();
 
             if (MainDataModel.Default.PackageManager.isGameRunning)
             {
                 MainPlayButton.IsEnabled = true;
+                ApplyButtonDetails(null);
                 ApplyPlayButtonStyle(MainDataModel.Default.ProgressBarState.PlayButtonString, Brushes.White, 26);
             }
             else if (!isOfficialStoreInstalled)
             {
                 MainPlayButton.IsEnabled = MainDataModel.Default.ProgressBarState.AllowPlaying;
+                ApplyButtonDetails("Minecraft for Windows was not found. Install the original Microsoft Store release first.");
                 ApplyStoreButtonStyle("Download Minecraft First.", Brushes.LightGray, 18);
             }
-            else if (!hasBundledDllPack)
+            else if (!bundledDllPack.IsReady)
             {
                 MainPlayButton.IsEnabled = false;
-                ApplyStoreButtonStyle("Missing dll Folder.", Brushes.LightGray, 18);
+                ApplyButtonDetails(bundledDllPack.DetailsText);
+                ApplyStoreButtonStyle(GetBundledDllButtonText(bundledDllPack), Brushes.LightGray, 18);
             }
             else if (!MainDataModel.Default.PackageManager.IsBundledModInstalled())
             {
                 MainPlayButton.IsEnabled = MainDataModel.Default.ProgressBarState.AllowPlaying;
+                ApplyButtonDetails("The bundled mod pack is ready. Click GET MODS to copy it into your Minecraft profile.");
                 ApplyModsButtonStyle("GET MODS", Brushes.White, 22);
             }
             else if (!isLauncherFullyLoaded)
             {
-                // Can not check if versions exists on first load.
                 MainPlayButton.IsEnabled = MainDataModel.Default.ProgressBarState.AllowPlaying;
+                ApplyButtonDetails(null);
                 ApplyPlayButtonStyle("Play", Brushes.White, 26);
                 isLauncherFullyLoaded = true;
             }
@@ -102,11 +107,25 @@ namespace XylarBedrock.Pages.Play.Home
                      !(selectedInstallation.ReadOnly && selectedInstallation.VersioningMode == VersioningMode.LatestRelease))
             {
                 MainPlayButton.IsEnabled = false;
+                ApplyButtonDetails("The selected installation is incomplete. Recreate it or switch back to the official Microsoft Store release.");
                 ApplyStoreButtonStyle("Download Minecraft First.", Brushes.LightGray, 18);
+            }
+            else if (selectedInstallation is not null && !IsSupportedStoreInstallation(selectedInstallation))
+            {
+                MainPlayButton.IsEnabled = false;
+                ApplyButtonDetails("Play now supports only the official Minecraft for Windows release from Microsoft Store.");
+                ApplyStoreButtonStyle("Store Release Only", Brushes.LightGray, 18);
+            }
+            else if (selectedInstallation is null)
+            {
+                MainPlayButton.IsEnabled = false;
+                ApplyButtonDetails("No valid Minecraft installation is selected right now. Reopen the launcher once or pick the official Store release.");
+                ApplyStoreButtonStyle("Select Installation", Brushes.LightGray, 18);
             }
             else
             {
                 MainPlayButton.IsEnabled = MainDataModel.Default.ProgressBarState.AllowPlaying;
+                ApplyButtonDetails(null);
                 ApplyPlayButtonStyle("Play", Brushes.White, 26);
             }
         }
@@ -136,6 +155,52 @@ namespace XylarBedrock.Pages.Play.Home
             PlayButtonText.Text = text;
             PlayButtonText.Foreground = foreground;
             PlayButtonText.FontSize = fontSize;
+        }
+
+        private void ApplyButtonDetails(string details)
+        {
+            ToolTipService.SetShowOnDisabled(MainPlayButton, true);
+            MainPlayButton.ToolTip = string.IsNullOrWhiteSpace(details) ? null : details;
+        }
+
+        private BLInstallation ResolveSelectedInstallation()
+        {
+            BLInstallation selectedInstallation = InstallationsList.SelectedItem as BLInstallation;
+            if (IsSupportedStoreInstallation(selectedInstallation))
+            {
+                return selectedInstallation;
+            }
+
+            selectedInstallation = MainDataModel.Default.Config.CurrentInstallations?
+                .FirstOrDefault(IsSupportedStoreInstallation);
+
+            if (selectedInstallation == null)
+            {
+                selectedInstallation = MainDataModel.Default.Config.CurrentInstallation;
+            }
+
+            if (selectedInstallation != null && !ReferenceEquals(InstallationsList.SelectedItem, selectedInstallation))
+            {
+                InstallationsList.SelectedItem = selectedInstallation;
+            }
+
+            return selectedInstallation;
+        }
+
+        private static string GetBundledDllButtonText(BundledDllPackDiagnostics diagnostics)
+        {
+            if (!diagnostics.DllDirectoryExists) return "Missing dll Folder.";
+            if (!diagnostics.ModDllExists) return $"Missing {Constants.BUNDLED_MOD_DLL_NAME}";
+            if (!diagnostics.RuntimeDllExists) return $"Missing {Constants.EXTRA_DLL_NAME}";
+            if (!diagnostics.ModDllReadable || !diagnostics.RuntimeDllReadable) return "DLL Pack Unreadable";
+            return "Missing DLL Pack";
+        }
+
+        private static bool IsSupportedStoreInstallation(BLInstallation installation)
+        {
+            return installation != null &&
+                   installation.ReadOnly &&
+                   installation.VersioningMode == VersioningMode.LatestRelease;
         }
 
         private string GetLatestImage()
@@ -225,7 +290,17 @@ namespace XylarBedrock.Pages.Play.Home
             }
             else
             {
-                BLInstallation i = InstallationsList.SelectedItem as BLInstallation;
+                BLInstallation i = ResolveSelectedInstallation();
+                if (i == null)
+                {
+                    MessageBox.Show(
+                        "No valid Minecraft installation is selected right now. Reopen the launcher once and try Play again.",
+                        App.DisplayName,
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
                 bool keepLauncherOpen = Properties.LauncherSettings.Default.KeepLauncherOpen;
                 MainDataModel.Default.Play(MainDataModel.Default.Config.CurrentProfile, i, keepLauncherOpen, false);
             }

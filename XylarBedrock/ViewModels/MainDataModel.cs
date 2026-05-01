@@ -76,7 +76,25 @@ namespace XylarBedrock.ViewModels
         public async void RemoveVersion(MCVersion v) => await PackageManager.RemovePackage(v);
         public async void Play(BLProfile p, BLInstallation i, bool KeepLauncherOpen, bool LaunchEditor, bool Save = true)
         {
-            if (i == null) return;
+            if (p == null)
+            {
+                MessageBox.Show(
+                    "No launcher profile is selected right now. Reopen XylarBedrock once, then try Play again.",
+                    App.DisplayName,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            if (i == null)
+            {
+                MessageBox.Show(
+                    "No valid Minecraft installation is selected right now. Reopen XylarBedrock once, then try Play again.",
+                    App.DisplayName,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
 
             i.LastPlayed = DateTime.Now;
             MainDataModel.Default.Config.Installation_UpdateLP(i);
@@ -85,6 +103,16 @@ namespace XylarBedrock.ViewModels
             {
                 Properties.LauncherSettings.Default.CurrentInstallationUUID = i.InstallationUUID;
                 Properties.LauncherSettings.Default.Save();
+            }
+
+            if (!(i.ReadOnly && i.VersioningMode == VersioningMode.LatestRelease))
+            {
+                MessageBox.Show(
+                    "XylarBedrock now launches only the official Minecraft for Windows release from Microsoft Store.",
+                    App.DisplayName,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
             }
 
             if (i.ReadOnly && i.VersioningMode == VersioningMode.LatestRelease)
@@ -99,13 +127,6 @@ namespace XylarBedrock.ViewModels
                 await PackageManager.LaunchPackage(officialRelease, string.Empty, KeepLauncherOpen, LaunchEditor);
                 return;
             }
-
-            var Version = i.Version;
-            if (Version == null) return;
-            var Path = MainDataModel.Default.FilePaths.GetInstallationPackageDataPath(p.UUID, i.DirectoryName_Full);
-
-            await PackageManager.InstallPackage(Version, Path);
-            if (Version.IsInstalled) await PackageManager.LaunchPackage(Version, Path, KeepLauncherOpen, LaunchEditor);
         }
 
         public async void Install(BLProfile p, BLInstallation i)
