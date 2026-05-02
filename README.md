@@ -34,7 +34,7 @@ A simple launcher to start and manage Minecraft Bedrock on Windows.
 
 ## Credits
 
-- Xylar Inc.  
+- the rest of Xylar Inc.  
 - Mrmariix  
 - SasyIsCool  
 - The_Red_Shadow
