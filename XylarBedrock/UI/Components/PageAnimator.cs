@@ -52,31 +52,54 @@ namespace XylarBedrock.UI.Components
             args.CurrentContent.MaxHeight = args.stored_max_height;
         }
 
-        private static IEasingFunction GetSwipeAnimationEasingFunction(bool isOverlay)
+        private static IEasingFunction GetSwipeAnimationEasingFunction(bool isOverlay, bool useCompatibilityMotion)
         {
+            if (useCompatibilityMotion)
+            {
+                return new CubicEase() { EasingMode = EasingMode.EaseOut };
+            }
+
             if (isOverlay) return new QuarticEase() { EasingMode = EasingMode.EaseOut };
-            else return null;
+            return new BackEase() { EasingMode = EasingMode.EaseOut, Amplitude = 0.24 };
         }
 
-        private static int GetFadeSpeed(bool isOverlay)
+        private static IEasingFunction GetFadeAnimationEasingFunction(bool isOverlay, bool useCompatibilityMotion)
         {
-            if (isOverlay) return 350;
-            else return 200;
+            if (useCompatibilityMotion)
+            {
+                return new QuadraticEase() { EasingMode = EasingMode.EaseOut };
+            }
+
+            if (isOverlay)
+            {
+                return new CubicEase() { EasingMode = EasingMode.EaseOut };
+            }
+
+            return new SineEase() { EasingMode = EasingMode.EaseOut };
         }
 
-        private static int GetSwipeSpeed(bool isOverlay)
+        private static int GetFadeSpeed(bool isOverlay, bool useCompatibilityMotion)
         {
-            if (isOverlay) return 500;
-            else return 175;
+            if (useCompatibilityMotion) return isOverlay ? 240 : 190;
+            if (isOverlay) return 300;
+            return 240;
         }
 
-        private static int GetSwipeSize(bool isOverlay)
+        private static int GetSwipeSpeed(bool isOverlay, bool useCompatibilityMotion)
         {
-            if (isOverlay) return 150;
-            return 200;
+            if (useCompatibilityMotion) return isOverlay ? 250 : 185;
+            if (isOverlay) return 340;
+            return 260;
         }
 
-        private static ThicknessAnimation GetSwipeAnimation(AnimationArgs animationArgs, double size, Duration duration, ExpandDirection direction, bool isOverlay)
+        private static int GetSwipeSize(bool isOverlay, bool useCompatibilityMotion)
+        {
+            if (useCompatibilityMotion) return isOverlay ? 72 : 92;
+            if (isOverlay) return 110;
+            return 126;
+        }
+
+        private static ThicknessAnimation GetSwipeAnimation(AnimationArgs animationArgs, double size, Duration duration, ExpandDirection direction, bool isOverlay, bool useCompatibilityMotion)
         {
             ThicknessAnimation animation0 = new ThicknessAnimation();
 
@@ -102,15 +125,16 @@ namespace XylarBedrock.UI.Components
                 ResetPageValues(animationArgs);
             };
             animation0.Duration = duration;
-            animation0.EasingFunction = GetSwipeAnimationEasingFunction(isOverlay);
+            animation0.EasingFunction = GetSwipeAnimationEasingFunction(isOverlay, useCompatibilityMotion);
             return animation0;
         }
-        private static DoubleAnimation GetFadeAnimation(Duration duration, bool fadeIn)
+        private static DoubleAnimation GetFadeAnimation(Duration duration, bool fadeIn, bool isOverlay, bool useCompatibilityMotion)
         {
             DoubleAnimation animation1 = new DoubleAnimation();
             animation1.From = (fadeIn ? 0 : 1);
             animation1.To = (fadeIn ? 1 : 0);
             animation1.Duration = duration;
+            animation1.EasingFunction = GetFadeAnimationEasingFunction(isOverlay, useCompatibilityMotion);
             return animation1;
         }
         private static void SetCurrentPage(AnimationArgs animationArgs, Frame frame, object content)
@@ -156,7 +180,7 @@ namespace XylarBedrock.UI.Components
             frame.Opacity = 0;
             frame.Navigate(content);
             Storyboard storyboard = new Storyboard();
-            DoubleAnimation animation = GetFadeAnimation(new Duration(TimeSpan.FromMilliseconds(GetFadeSpeed(isOverlay))), true);
+            DoubleAnimation animation = GetFadeAnimation(new Duration(TimeSpan.FromMilliseconds(GetFadeSpeed(isOverlay, false))), true, isOverlay, false);
             storyboard.Children.Add(animation);
             Storyboard.SetTargetProperty(animation, new PropertyPath(Frame.OpacityProperty));
             Storyboard.SetTarget(animation, frame);
@@ -165,7 +189,7 @@ namespace XylarBedrock.UI.Components
         public static void FrameFadeOut(Frame frame, object content, bool isOverlay)
         {
             Storyboard storyboard = new Storyboard();
-            DoubleAnimation animation = GetFadeAnimation(new Duration(TimeSpan.FromMilliseconds(GetFadeSpeed(isOverlay))), false);
+            DoubleAnimation animation = GetFadeAnimation(new Duration(TimeSpan.FromMilliseconds(GetFadeSpeed(isOverlay, false))), false, isOverlay, false);
             storyboard.Children.Add(animation);
             Storyboard.SetTargetProperty(animation, new PropertyPath(Frame.OpacityProperty));
             Storyboard.SetTarget(animation, frame);
@@ -175,25 +199,28 @@ namespace XylarBedrock.UI.Components
         #endregion
 
         #region Swipe Animations
-        public static void FrameSwipe_PageIn(Frame frame, object content, bool isOverlay)
+        public static void FrameSwipe_PageIn(Frame frame, object content, bool isOverlay, bool useCompatibilityMotion = false)
         {
-            var storyboard = FrameSwipe_Base(frame, content, ExpandDirection.Up, true, true, isOverlay);
+            var storyboard = FrameSwipe_Base(frame, content, ExpandDirection.Up, true, true, isOverlay, useCompatibilityMotion);
             frame.Dispatcher.Invoke(() => frame.Navigate(content));
             storyboard.Dispatcher.InvokeAsync(() => storyboard.Begin());
         }
-        public static void FrameSwipe_PageOut(Frame frame, object content, bool isOverlay)
+        public static void FrameSwipe_PageOut(Frame frame, object content, bool isOverlay, bool useCompatibilityMotion = false)
         {
-            var storyboard = FrameSwipe_Base(frame, frame.Dispatcher.Invoke(() => frame.Content), ExpandDirection.Up, true, false, isOverlay);
+            var storyboard = FrameSwipe_Base(frame, frame.Dispatcher.Invoke(() => frame.Content), ExpandDirection.Up, true, false, isOverlay, useCompatibilityMotion);
             storyboard.Completed += (sender, e) => frame.Navigate(content);
             storyboard.Dispatcher.InvokeAsync(() => storyboard.Begin());
         }
-        public static void FrameSwipe(Frame frame, object content, ExpandDirection direction, bool isOverlay = false)
+        public static void FrameSwipe(Frame frame, object content, ExpandDirection direction, bool isOverlay = false, bool useCompatibilityMotion = false)
         {
-            frame.Dispatcher.InvokeAsync(() => frame.Navigate(content));
-            var storyboard = FrameSwipe_Base(frame, content, direction, true, true, isOverlay);
-            storyboard.Dispatcher.InvokeAsync(() => storyboard.Begin());
+            frame.Dispatcher.Invoke(() =>
+            {
+                frame.Navigate(content);
+                var storyboard = FrameSwipe_Base(frame, content, direction, true, true, isOverlay, useCompatibilityMotion);
+                storyboard.Begin();
+            });
         }
-        public static Storyboard FrameSwipe_Base(Frame frame, object content, ExpandDirection direction, bool useFade, bool fadeIn, bool isOverlay)
+        public static Storyboard FrameSwipe_Base(Frame frame, object content, ExpandDirection direction, bool useFade, bool fadeIn, bool isOverlay, bool useCompatibilityMotion = false)
         {
             return Application.Current.Dispatcher.Invoke(() =>
             {
@@ -204,17 +231,17 @@ namespace XylarBedrock.UI.Components
                 SetPageValuesForAnimation(animationArgs);
 
                 Storyboard storyboard = new Storyboard();
-                Duration duration = new Duration(TimeSpan.FromMilliseconds(GetSwipeSpeed(isOverlay)));
+                Duration duration = new Duration(TimeSpan.FromMilliseconds(GetSwipeSpeed(isOverlay, useCompatibilityMotion)));
 
                 if (useFade)
                 {
-                    var fadeAnim = GetFadeAnimation(duration, fadeIn);
+                    var fadeAnim = GetFadeAnimation(duration, fadeIn, isOverlay, useCompatibilityMotion);
                     storyboard.Children.Add(fadeAnim);
                     Storyboard.SetTargetProperty(fadeAnim, new PropertyPath(Frame.OpacityProperty));
                     Storyboard.SetTarget(fadeAnim, frame);
                 }
 
-                var swipeAnim = GetSwipeAnimation(animationArgs, GetSwipeSize(isOverlay), duration, direction, isOverlay);
+                var swipeAnim = GetSwipeAnimation(animationArgs, GetSwipeSize(isOverlay, useCompatibilityMotion), duration, direction, isOverlay, useCompatibilityMotion);
                 storyboard.Children.Add(swipeAnim);
                 Storyboard.SetTargetProperty(swipeAnim, new PropertyPath(Frame.MarginProperty));
                 Storyboard.SetTarget(swipeAnim, frame);

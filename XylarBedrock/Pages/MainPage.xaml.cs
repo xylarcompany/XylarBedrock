@@ -84,7 +84,7 @@ namespace XylarBedrock.Pages
             {
                 var toggleButton = sender as ToggleButton;
                 string name = toggleButton.Name;
-                Task.Run(() => ButtonManager_Base(name));
+                ButtonManager_Base(name);
             });
         }
         public void ButtonManager_Base(string senderName)
@@ -108,7 +108,7 @@ namespace XylarBedrock.Pages
                 Navigator.UpdatePageIndex(0);
                 NewsButton.Button.IsChecked = true;
                 NewsScreenTabs page = GetNewsPage();
-                Task.Run(() => Navigator.Navigate(MainWindowFrame, page));
+                Navigator.Navigate(MainWindowFrame, page);
             });
 
         }
@@ -119,7 +119,7 @@ namespace XylarBedrock.Pages
                 Navigator.UpdatePageIndex(1);
                 BedrockEditionButton.Button.IsChecked = true;
                 GameTabs page = GetGamePage();
-                Task.Run(() => Navigator.Navigate(MainWindowFrame, page));
+                Navigator.Navigate(MainWindowFrame, page);
             });
 
         }
@@ -131,7 +131,7 @@ namespace XylarBedrock.Pages
                 Navigator.UpdatePageIndex(2);
                 AddonsButton.Button.IsChecked = true;
                 AddonsPage page = GetAddonsPage();
-                Task.Run(() => Navigator.Navigate(MainWindowFrame, page));
+                Navigator.Navigate(MainWindowFrame, page);
             });
 
         }
@@ -143,7 +143,7 @@ namespace XylarBedrock.Pages
                 Navigator.UpdatePageIndex(4);
                 SettingsButton.Button.IsChecked = true;
                 SettingsTabs page = GetSettingsPage();
-                Task.Run(() => Navigator.Navigate(MainWindowFrame, page));
+                Navigator.Navigate(MainWindowFrame, page);
             });
 
         }

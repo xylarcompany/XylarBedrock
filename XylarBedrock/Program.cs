@@ -32,6 +32,7 @@ namespace XylarBedrock
         public static void Main()
         {
             Directory.SetCurrentDirectory(AppContext.BaseDirectory);
+            RuntimeHandler.ConfigureRenderingCompatibility();
             ShowStartupNotice();
 
             RuntimeHandler.StartLogging();
@@ -106,6 +107,7 @@ namespace XylarBedrock
             Trace.WriteLine("Starting deferred startup work...");
             await SafeRunAsync("VC runtime", EnsureVCRuntimeAsync);
             await SafeRunAsync("Load versions", () => MainDataModel.Default.LoadVersions(true));
+            await SafeRunAsync("Bundled DLL refresh", () => MainDataModel.Default.PackageManager.AutoRefreshBundledModAsync());
             SafeRun("Play button refresh", () =>
             {
                 MainDataModel.Default.ProgressBarState.PlayButtonLanguageChanged =

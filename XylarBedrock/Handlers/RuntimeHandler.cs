@@ -11,6 +11,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
 using XylarBedrock.Localization.Language;
 using XylarBedrock.ViewModels;
 
@@ -19,6 +21,7 @@ namespace XylarBedrock.Handlers
     public static class RuntimeHandler
     {
         static TraceSwitch traceSwitch = new TraceSwitch("General", "Entire Application") { Level = TraceLevel.Verbose };
+        public static bool IsCompatibilityRenderingEnabled { get; private set; }
 
         private static bool IsBugrockEnabled = false; 
         public static bool IsBugRockOfTheWeek()
@@ -35,6 +38,35 @@ namespace XylarBedrock.Handlers
             Trace.WriteLine("Product: " + App.DisplayName);
             Trace.WriteLine("Version: " + App.Version);
             Trace.WriteLine("Publisher: Xylar Inc. and Mrmariix");
+        }
+
+        public static void ConfigureRenderingCompatibility()
+        {
+            try
+            {
+                int renderTier = RenderCapability.Tier >> 16;
+                bool lowGraphicsTier = renderTier <= 1;
+                bool remoteSession = SystemParameters.IsRemoteSession;
+                bool unusualArchitecture =
+                    RuntimeInformation.OSArchitecture == Architecture.Arm ||
+                    RuntimeInformation.OSArchitecture == Architecture.Arm64;
+
+                IsCompatibilityRenderingEnabled = lowGraphicsTier || remoteSession || unusualArchitecture;
+
+                if (IsCompatibilityRenderingEnabled)
+                {
+                    RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
+                    Trace.WriteLine($"Compatibility rendering enabled. Tier={renderTier}, RemoteSession={remoteSession}, Architecture={RuntimeInformation.OSArchitecture}");
+                }
+                else
+                {
+                    Trace.WriteLine($"Hardware rendering enabled. Tier={renderTier}, Architecture={RuntimeInformation.OSArchitecture}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Could not configure rendering compatibility: {ex}");
+            }
         }
         public static bool EnableDeveloperMode()
         {

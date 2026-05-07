@@ -239,19 +239,15 @@ namespace XylarBedrock.Handlers
             return Path.Combine(GetModsDirectoryPath(), Constants.BUNDLED_MOD_DLL_NAME);
         }
 
+        public string GetInstalledExtraDllPath()
+        {
+            return Path.Combine(GetModsDirectoryPath(), Constants.EXTRA_DLL_NAME);
+        }
+
         public bool IsBundledModInstalled()
         {
-            string sourcePath = GetBundledModSourcePath();
-            string installedPath = GetInstalledModPath();
-
-            if (!File.Exists(sourcePath) || !File.Exists(installedPath)) return false;
-
-            FileInfo sourceInfo = new FileInfo(sourcePath);
-            FileInfo installedInfo = new FileInfo(installedPath);
-
-            if (sourceInfo.Length != installedInfo.Length) return false;
-
-            return GetFileHash(sourcePath) == GetFileHash(installedPath);
+            return IsBundledFileInstalled(GetBundledModSourcePath(), GetInstalledModPath())
+                && IsBundledFileInstalled(GetBundledExtraDllSourcePath(), GetInstalledExtraDllPath());
         }
 
         public bool HasBundledModSource()
@@ -311,6 +307,7 @@ namespace XylarBedrock.Handlers
             string sourcePath = dllPack.ModDllPath;
             string extraDllSourcePath = dllPack.RuntimeDllPath;
             string installedPath = GetInstalledModPath();
+            string installedExtraDllPath = GetInstalledExtraDllPath();
 
             if (!dllPack.IsReady)
             {
@@ -328,17 +325,15 @@ namespace XylarBedrock.Handlers
             {
                 Directory.CreateDirectory(GetModsDirectoryPath());
                 File.Copy(sourcePath, installedPath, true);
+                File.Copy(extraDllSourcePath, installedExtraDllPath, true);
 
-                string minecraftFolder = @"C:\Program Files\WindowsApps\MICROSOFT.MINECRAFTUWP_1.26.1301.0_x64__8wekyb3d8bbwe";
-                string extraDllDestPath = Path.Combine(minecraftFolder, Constants.EXTRA_DLL_NAME);
-
-                if (File.Exists(extraDllSourcePath))
+                // finally here its to make minecraft crack work, finally...
+                var uwpDirs = GetInstalledMinecraftDirectories(VersionType.Release);
+                foreach (string uwpDir in uwpDirs)
                 {
-                    Directory.CreateDirectory(minecraftFolder);
-                    File.Copy(extraDllSourcePath, extraDllDestPath, true);
+                    string uwpExtraDllPath = Path.Combine(uwpDir, Constants.EXTRA_DLL_NAME);
+                    File.Copy(extraDllSourcePath, uwpExtraDllPath, true);
                 }
-
-                CopyDllsToXboxGames();
             });
 
             bool installed = IsBundledModInstalled();
@@ -355,8 +350,8 @@ namespace XylarBedrock.Handlers
             {
                 MessageBox.Show(
                     installed
-                        ? "Mods are now in your Minecraft Bedrock mods folder. You can press PLAY now."
-                        : "The launcher could not finish copying the bundled mod file.",
+                        ? "Both bundled DLLs are now in your Minecraft Bedrock mods folder. You can press PLAY now."
+                        : "The launcher could not finish copying the bundled DLLs to your Minecraft Bedrock mods folder.",
                     App.DisplayName,
                     MessageBoxButton.OK,
                     installed ? MessageBoxImage.Information : MessageBoxImage.Warning);
@@ -1429,6 +1424,24 @@ namespace XylarBedrock.Handlers
             using FileStream stream = File.OpenRead(filePath);
             byte[] hash = sha256.ComputeHash(stream);
             return Convert.ToHexString(hash);
+        }
+
+        private static bool IsBundledFileInstalled(string sourcePath, string installedPath)
+        {
+            if (!File.Exists(sourcePath) || !File.Exists(installedPath))
+            {
+                return false;
+            }
+
+            FileInfo sourceInfo = new FileInfo(sourcePath);
+            FileInfo installedInfo = new FileInfo(installedPath);
+
+            if (sourceInfo.Length != installedInfo.Length)
+            {
+                return false;
+            }
+
+            return GetFileHash(sourcePath) == GetFileHash(installedPath);
         }
 
         private void CopyDllsToXboxGames()

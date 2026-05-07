@@ -26,10 +26,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$publishDir = Join-Path $root '%PUBLISH_DIR%';" ^
   "$stageDir = Join-Path $root '%STAGE_DIR%';" ^
   "$dllDir = Join-Path $stageDir 'dll';" ^
-  "$sourceDllDir = @((Join-Path $root 'dll'), (Join-Path $root 'release\\dll')) | Where-Object { Test-Path $_ } | Select-Object -First 1;" ^
+  "$sourceDllDir = @((Join-Path $root 'Resources\\dll'), (Join-Path $root 'dll'), (Join-Path $root 'release\\dll')) | Where-Object { Test-Path $_ } | Select-Object -First 1;" ^
   "$zipDir = Join-Path $root '%ZIP_DIR%';" ^
   "$zipPath = Join-Path $zipDir '%ZIP_NAME%';" ^
-  "if (-not $sourceDllDir) { throw 'Could not find a source dll folder. Expected .\\dll or .\\release\\dll.' }" ^
+  "if (-not $sourceDllDir) { throw 'Could not find a source dll folder. Expected .\\Resources\\dll, .\\dll or .\\release\\dll.' }" ^
   "Remove-Item $stageDir -Recurse -Force -ErrorAction SilentlyContinue;" ^
   "New-Item -ItemType Directory -Path $dllDir -Force | Out-Null;" ^
   "New-Item -ItemType Directory -Path $zipDir -Force | Out-Null;" ^

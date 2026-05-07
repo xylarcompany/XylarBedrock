@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using XylarBedrock.Handlers;
 
 namespace XylarBedrock.UI.Components
 {
@@ -59,7 +60,8 @@ namespace XylarBedrock.UI.Components
             if (current > last) direction = rightDirection;
             else direction = leftDirection;
 
-            Task.Run(() => XylarBedrock.UI.Components.PageAnimator.FrameSwipe(source, content, direction));
+            bool useCompatibilityMotion = RuntimeHandler.IsCompatibilityRenderingEnabled;
+            XylarBedrock.UI.Components.PageAnimator.FrameSwipe(source, content, direction, false, useCompatibilityMotion);
         }
     }
 }
